@@ -27,9 +27,18 @@ namespace Clinic.DataService.Repositories
                 foreach(var include in includes)
                     query = query.Include(include);
 
-            return await query.Where(o => o.Id == id).SingleOrDefaultAsync();
+            return await query.SingleOrDefaultAsync(o => o.Id == id);
         }
 
+        public async Task<Appointment> FindAsync(Expression<Func<Appointment, bool>> criteria, string[] includes = null)
+        {
+            IQueryable<Appointment> query = dbSet;
 
+            if (includes != null)
+                foreach (var include in includes)
+                    query = query.Include(include);
+
+            return await query.FirstOrDefaultAsync(criteria);
+        }
     }
 }

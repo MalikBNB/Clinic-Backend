@@ -45,5 +45,12 @@ namespace Clinic.Configuration.Messages
             public static string InvalidAuthentication = "Invalid authentication request.";
 
         }
+        
+        public static class Appointment
+        {
+            public static string CannotCancel = "Cannot cancel this appointment.";
+            public static string AlreadyCanceled = "This appointment it has been already canceled";
+
+        }
     }
 }

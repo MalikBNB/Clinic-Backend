@@ -71,7 +71,7 @@ namespace Clinic.DataService.Repositories
             throw new NotImplementedException();
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync(string[] includes = null)
+        public virtual async Task<IEnumerable<T>> GetAllAsync(string[] includes = null, bool trackObject = false)
         {
             IQueryable<T> query = dbSet;
 
@@ -79,10 +79,13 @@ namespace Clinic.DataService.Repositories
                 foreach (var include in includes)
                     query = query.Include(include);
 
-            return await query.ToListAsync();
+            if (trackObject)
+                return await query.ToListAsync();
+
+            return await query.AsNoTracking().ToListAsync();
         }
 
-        public virtual async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> criteria, string[] includes = null)
+        public virtual async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> criteria, string[] includes = null, bool trackObject = false)
         {
             IQueryable<T> query = dbSet;
 
@@ -90,7 +93,10 @@ namespace Clinic.DataService.Repositories
                 foreach (var include in includes)
                     query = query.Include(include);
 
-            return await query.Where(criteria).ToListAsync();
+            if (trackObject)
+                return await query.Where(criteria).ToListAsync();
+
+            return await query.AsNoTracking().Where(criteria).ToListAsync();
         }
     }
 }

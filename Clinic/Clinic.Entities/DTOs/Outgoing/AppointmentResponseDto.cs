@@ -13,7 +13,7 @@ namespace Clinic.Entities.DTOs.Outgoing
         public DateTime Date { get; set; }
         public AppointmentStatus status { get; set; }
         public Guid PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public Patient Patient { get; set; } = null!;
         public Guid DoctorId { get; set; }
         public Doctor Doctor { get; set; }
         public Guid CreatorId { get; set; }

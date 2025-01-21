@@ -9,8 +9,9 @@ namespace Clinic.Entities.DTOs.Incoming.Appointments
 {
     public class AppointmentDto
     {
+        public Guid Id { get; set; }
         public DateTime Date { get; set; }
-        public AppointmentStatus status { get; set; } = AppointmentStatus.Confirmed;
+        public AppointmentStatus status { get; set; }
         public Guid PatientId { get; set; }
         public Guid DoctorId { get; set; }
         public Guid CreatorId { get; set; }

@@ -17,7 +17,7 @@ namespace Clinic.DataService.Repositories
         {
         }
 
-        public override async Task<IEnumerable<RefreshToken>> GetAllAsync(string[] includes = null)
+        public override async Task<IEnumerable<RefreshToken>> GetAllAsync(string[] includes = null, bool trackObject = false)
         {
             try
             {

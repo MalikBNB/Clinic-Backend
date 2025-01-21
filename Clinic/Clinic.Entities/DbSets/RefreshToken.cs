@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Clinic.Entities.DbSets.Abstract_classes;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Clinic.Entities.DbSets
@@ -11,6 +12,7 @@ namespace Clinic.Entities.DbSets
         public bool IsUsed { get; set; } // To make sure that the token is only used once
         public bool IsRevoked { get; set; } // To make sure they are valid
         public DateTime ExpiryDate { get; set; }
+        public byte Status { get; set; } = 1;
 
         [ForeignKey(nameof(UserId))]
         public IdentityUser User { get; set; }

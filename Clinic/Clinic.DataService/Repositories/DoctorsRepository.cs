@@ -17,13 +17,12 @@ namespace Clinic.DataService.Repositories
         {
         }
 
-        public override async Task<IEnumerable<Doctor>> GetAllAsync(string[] includes = null)
+        public override async Task<IEnumerable<Doctor>> GetAllAsync(string[] includes = null, bool trackObject = false)
         {
             try
             {
-                return await dbSet.Include(p => p.User)
-                                .Where(d => d.User.Status == 1)
-                                .AsNoTracking().ToListAsync();
+                return await dbSet.Where(d => d.Status == 1)
+                                  .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -34,32 +33,24 @@ namespace Clinic.DataService.Repositories
 
         public override async Task<Doctor> GetByIdAsync(Guid id)
         {
-            return await dbSet.Include(p => p.User)
-                              .FirstOrDefaultAsync(d => d.Id == id && d.User.Status == 1);
+            return await dbSet.FirstOrDefaultAsync(d => d.Id == id && d.Status == 1);
         }
 
         public override async Task<Doctor> GetByIdentityIdAsync(Guid identityId)
         {
-            return await dbSet.Include(d => d.User)
-                              .FirstOrDefaultAsync(d => d.User.IdentityId == identityId && d.User.Status == 1);
-        }
-
-        public override async Task<Doctor> GetByUserIdAsync(Guid userId)
-        {
-            return await dbSet.FirstOrDefaultAsync(d => d.UserId == userId && d.User.Status == 1);
+            return await dbSet.FirstOrDefaultAsync(d => d.IdentityId == identityId && d.Status == 1);
         }
 
         public async Task<IEnumerable<Doctor>> GetBySpeciality(string speciality)
         {
             if (string.IsNullOrEmpty(speciality)) return new List<Doctor>();
 
-            return await dbSet.Include(p => p.User)
-                              .Where(d => d.Specialization == speciality && d.User.Status == 1).ToListAsync();
+            return await dbSet.Where(d => d.Specialization == speciality && d.Status == 1).ToListAsync();
         }
 
         public async Task<bool> IsDoctorExists(string email)
         {
-            return await dbSet.SingleOrDefaultAsync(d => d.User.Email == email) != null;
+            return await dbSet.SingleOrDefaultAsync(d => d.Email == email) != null;
         }
     }
 }

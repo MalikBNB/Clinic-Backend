@@ -3,32 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Clinic.Entities.DbSets.Abstract_classes;
 
 namespace Clinic.Entities.DbSets
 {
-    public class Appointment
+    public class Appointment : BaseEntity
     {
-        public Guid Id { get; set; }
         public DateTime Date {  get; set; }
         public AppointmentStatus status { get; set; }
 
-        public Guid PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public string PatientId { get; set; } = string.Empty;
+        public Patient Patient { get; set; } = null!;
 
-        public Guid DoctorId { get; set; }
-        public Doctor Doctor { get; set; }
+        public string DoctorId { get; set; } = string.Empty;
+        public Doctor Doctor { get; set; } = null!;
 
         public MedicalRecord? MedicalRecord { get; set; }
-
         public Payment? Payment { get; set; }
-
-        public Guid CreatorId { get; set; }
-        public virtual User Creator { get; set; }
-        public DateTime Created {  get; set; }
-
-        public Guid ModifierId { get; set; }
-        public virtual User Modifier { get; set; }
-        public DateTime Modified { get; set; }
     }
 
     public enum AppointmentStatus

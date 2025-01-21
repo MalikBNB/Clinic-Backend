@@ -20,7 +20,7 @@ namespace Clinic.DataService.Repositories
         }
 
 
-        public override async Task<IEnumerable<User>> GetAllAsync(string[] includes = null)
+        public override async Task<IEnumerable<User>> GetAllAsync(string[] includes = null, bool trackObject = false)
         {
             try
             {

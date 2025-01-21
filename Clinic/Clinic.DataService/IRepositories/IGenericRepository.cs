@@ -10,8 +10,8 @@ namespace Clinic.DataService.IRepositories
 {
     public interface IGenericRepository<T> where T : class
     {
-        Task<IEnumerable<T>> GetAllAsync(string[] includes = null);
-        Task<List<T>> GetAllAsync(Expression<Func<T, bool>> criteria, string[] includes = null);
+        Task<IEnumerable<T>> GetAllAsync(string[] includes = null, bool trackObject = false);
+        Task<List<T>> GetAllAsync(Expression<Func<T, bool>> criteria, string[] includes = null, bool trackObject = false);
         Task<T> GetByIdAsync(Guid id);
         Task<T> GetByUserIdAsync(Guid userId);
         Task<T> GetByIdentityIdAsync(Guid identityId);

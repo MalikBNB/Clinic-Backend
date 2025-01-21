@@ -6,15 +6,10 @@ using System.Threading.Tasks;
 
 namespace Clinic.Entities.DbSets
 {
-    public class Patient
+    public class Patient : Person
     {
-        public Guid Id { get; set; }
 
-        public Guid UserId { get; set; }
-
-        public User User { get; set; } = new User();
-
-        public ICollection<Appointment> Appointments { get; set; }
+        public ICollection<Appointment> Appointments { get; set; } = null!;
 
     }
 }
