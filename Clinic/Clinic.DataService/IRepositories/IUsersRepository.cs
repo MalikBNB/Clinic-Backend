@@ -1,4 +1,5 @@
 ﻿using Clinic.Entities.DbSets;
+using Clinic.Entities.DTOs.Incoming.Profile;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Clinic.DataService.IRepositories
     public interface IUsersRepository : IGenericRepository<User>
     {
         Task<bool> IsUserExists(string email);
-        //Task<User> GetByIdentityIdAsync(Guid identityId, bool isPatient);
+        Task<bool> UpdateAsync(Guid id, UpdateProfileDto dto);
 
     }
 }

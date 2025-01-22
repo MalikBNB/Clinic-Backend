@@ -12,10 +12,10 @@ namespace Clinic.Entities.DbSets
         public DateTime Date {  get; set; }
         public AppointmentStatus status { get; set; }
 
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
         public Patient Patient { get; set; } = null!;
 
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
         public Doctor Doctor { get; set; } = null!;
 
         public MedicalRecord? MedicalRecord { get; set; }

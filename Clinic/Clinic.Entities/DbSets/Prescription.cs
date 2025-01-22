@@ -16,7 +16,7 @@ namespace Clinic.Entities.DbSets
         public DateTime StartDate {  get; set; } = DateTime.Now;
         public DateTime EndDate {  get; set; }
 
-        public string MedicalRecordId { get; set; } = string.Empty;
+        public Guid MedicalRecordId { get; set; }
         public MedicalRecord MedicalRecord { get; set; } = null!;
     }
 }

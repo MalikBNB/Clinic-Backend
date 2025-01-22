@@ -1,4 +1,6 @@
 ﻿using Clinic.DataService.IRepositories;
+using Clinic.Entities.DbSets;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;

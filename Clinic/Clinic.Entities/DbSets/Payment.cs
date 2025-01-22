@@ -14,7 +14,7 @@ namespace Clinic.Entities.DbSets
         public decimal Amount { get; set; }
         public string Notes { get; set; } = string.Empty;
 
-        public string AppointmentId { get; set; } = string.Empty;
+        public Guid AppointmentId { get; set; }
         public Appointment Appointment { get; set; } = null!;
     }
 

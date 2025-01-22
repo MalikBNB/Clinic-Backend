@@ -2,6 +2,7 @@
 using Clinic.Entities.DbSets;
 using Clinic.Entities.DTOs.Incoming;
 using Clinic.Entities.DTOs.Incoming.Doctors;
+using Clinic.Entities.DTOs.Incoming.Users;
 using Clinic.Entities.DTOs.Outgoing;
 
 namespace Clinic.Api.Profiles
@@ -10,7 +11,7 @@ namespace Clinic.Api.Profiles
     {
         public UserProfile()
         {
-            CreateMap<DoctorDto, User>()
+            CreateMap<UserDto, User>()
                 .ForMember(
                     dest => dest.FirstName,
                     from => from.MapFrom(dto => $"{dto.FirstName}")
@@ -32,6 +33,7 @@ namespace Clinic.Api.Profiles
                     from => from.MapFrom(dto => 1)
                 );
 
+           
             CreateMap<User, ProfileDto>()
                 .ForMember(
                     dest => dest.FirstName,

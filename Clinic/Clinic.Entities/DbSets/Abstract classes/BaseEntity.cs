@@ -16,10 +16,7 @@ namespace Clinic.Entities.DbSets.Abstract_classes
         public string ModifierId { get; set; } = string.Empty;
         public DateTime Modified { get; set; }
 
-        [ForeignKey(nameof(CreatorId))]
         public IdentityUser Creator { get; set; } = null!;
-
-        [ForeignKey(nameof(ModifierId))]
         public IdentityUser Modifier { get; set; } = null!;
     }
 }

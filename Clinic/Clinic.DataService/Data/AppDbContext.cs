@@ -36,41 +36,35 @@ namespace Clinic.DataService.Data
             //    .OnDelete(DeleteBehavior.Cascade);  
             //builder.Entity<Patient>().HasIndex(o => o.UserId).IsUnique();
 
-            //builder.Entity<Appointment>().HasOne(o => o.Patient)
-            //    .WithMany(o => o.Appointments)
-            //    .HasForeignKey(o => o.PatientId)
-            //    .IsRequired()
-            //    .OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<Appointment>().HasOne(o => o.Patient)
+                .WithMany(o => o.Appointments)
+                .HasForeignKey(o => o.PatientId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
-            //builder.Entity<Appointment>().HasOne(o => o.Doctor)
-            //    .WithMany(o => o.Appointments)
-            //    .HasForeignKey(o => o.DoctorId)
-            //    .IsRequired()
-            //    .OnDelete(DeleteBehavior.NoAction);
-            
-            //builder.Entity<Appointment>().HasOne(o => o.Creator)
-            //    .WithMany(o => o.Appointments)
-            //    .HasForeignKey(o => o.CreatorId)
-            //    .IsRequired()
-            //    .OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<Appointment>().HasOne(o => o.Doctor)
+                .WithMany(o => o.Appointments)
+                .HasForeignKey(o => o.DoctorId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
-            //builder.Entity<Prescription>().HasOne(o => o.MedicalRecord)
-            //    .WithOne(o => o.Prescription)
-            //    .HasForeignKey<Prescription>(o => o.MedicalRecordId)
-            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
-            //builder.Entity<Prescription>().HasIndex(o => o.MedicalRecordId).IsUnique();
+            builder.Entity<Prescription>().HasOne(o => o.MedicalRecord)
+                .WithOne(o => o.Prescription)
+                .HasForeignKey<Prescription>(o => o.MedicalRecordId)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<Prescription>().HasIndex(o => o.MedicalRecordId).IsUnique();
 
-            //builder.Entity<MedicalRecord>().HasOne(o => o.Appointment)
-            //    .WithOne(o => o.MedicalRecord)
-            //    .HasForeignKey<MedicalRecord>(o => o.AppointmentId)
-            //    .IsRequired();
-            //builder.Entity<MedicalRecord>().HasIndex(o => o.AppointmentId).IsUnique();
+            builder.Entity<MedicalRecord>().HasOne(o => o.Appointment)
+                .WithOne(o => o.MedicalRecord)
+                .HasForeignKey<MedicalRecord>(o => o.AppointmentId)
+                .IsRequired();
+            builder.Entity<MedicalRecord>().HasIndex(o => o.AppointmentId).IsUnique();
 
-            //builder.Entity<Payment>().HasOne(o => o.Appointment)
-            //    .WithOne(o => o.Payment)
-            //    .HasForeignKey<Payment>(o => o.AppointmentId)
-            //    .IsRequired();
-            //builder.Entity<Payment>().HasIndex(o => o.AppointmentId).IsUnique();
+            builder.Entity<Payment>().HasOne(o => o.Appointment)
+                .WithOne(o => o.Payment)
+                .HasForeignKey<Payment>(o => o.AppointmentId)
+                .IsRequired();
+            builder.Entity<Payment>().HasIndex(o => o.AppointmentId).IsUnique();
 
 
             base.OnModelCreating(builder);

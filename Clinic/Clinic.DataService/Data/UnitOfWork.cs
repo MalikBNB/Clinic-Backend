@@ -2,6 +2,7 @@
 using Clinic.DataService.IRepositories;
 using Clinic.DataService.Repositories;
 using Clinic.Entities.DbSets;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -50,5 +51,7 @@ namespace Clinic.DataService.Data
         {
             _context.Dispose();
         }
+
+        
     }
 }

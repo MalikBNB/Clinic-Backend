@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Clinic.DataService.Data;
 using Clinic.DataService.IRepositories;
 using Clinic.Entities.DbSets;
+using Clinic.Entities.DTOs.Incoming.Profile;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -51,6 +52,33 @@ namespace Clinic.DataService.Repositories
         public async Task<bool> IsDoctorExists(string email)
         {
             return await dbSet.SingleOrDefaultAsync(d => d.Email == email) != null;
+        }
+
+        public async Task<bool> UpdateAsync(Guid id, UpdateDoctorProfileDto dto)
+        {
+            try
+            {
+                var doctorToUpdate = await dbSet.FirstOrDefaultAsync(u => u.Id == id
+                                                                     && u.Status == 1);
+                if (doctorToUpdate is null) return false;
+
+                doctorToUpdate.FirstName = dto.FirstName;
+                doctorToUpdate.LastName = dto.LastName;
+                doctorToUpdate.DateOfBirth = dto.DateOfBirth;
+                doctorToUpdate.Specialization = dto.Sepecialization;
+                doctorToUpdate.Phone = dto.Phone;
+                doctorToUpdate.Address = dto.Address;
+                doctorToUpdate.Gendor = dto.Gendor;
+                doctorToUpdate.ModifierId = dto.ModifierId;
+                doctorToUpdate.Modified = DateTime.Now;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(UsersRepository));
+                return false;
+            }
         }
     }
 }

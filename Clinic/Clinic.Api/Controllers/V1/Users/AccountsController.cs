@@ -89,6 +89,8 @@ namespace Clinic.Api.Controllers.V1.Users
                 Gendor = "",
                 Phone = "",
                 Status = 1,
+                CreatorId = identityUser.Id,
+                ModifierId = identityUser.Id,
                 Created = DateTime.Now,
                 Modified = DateTime.Now
             };
@@ -148,20 +150,19 @@ namespace Clinic.Api.Controllers.V1.Users
 
             var patient = new Patient
             {
-                User = new User
-                {
-                    IdentityId = new Guid(identityUser.Id),
-                    FirstName = registrationDto.FirstName,
-                    LastName = registrationDto.LastName,
-                    Email = registrationDto.Email,
-                    DateOfBirth = DateTime.Now,
-                    Address = "",
-                    Gendor = "",
-                    Phone = "",
-                    Status = 1,
-                    Created = DateTime.Now,
-                    Modified = DateTime.Now
-                },
+                IdentityId = new Guid(identityUser.Id),
+                FirstName = registrationDto.FirstName,
+                LastName = registrationDto.LastName,
+                Email = registrationDto.Email,
+                DateOfBirth = DateTime.Now,
+                Address = "",
+                Gendor = "",
+                Phone = "",
+                Status = 1,
+                CreatorId = identityUser.Id,
+                ModifierId = identityUser.Id,
+                Created = DateTime.Now,
+                Modified = DateTime.Now
             };
 
             await _unitOfWork.Patients.AddAsync(patient);
@@ -219,21 +220,20 @@ namespace Clinic.Api.Controllers.V1.Users
 
             var doctor = new Doctor
             {
+                IdentityId = new Guid(identityUser.Id),
+                FirstName = registrationDto.FirstName,
+                LastName = registrationDto.LastName,
+                Email = registrationDto.Email,
+                DateOfBirth = DateTime.Now,
+                Address = "",
+                Gendor = "",
+                Phone = "",
                 Specialization = registrationDto.Specialization,
-                User = new User
-                {
-                    IdentityId = new Guid(identityUser.Id),
-                    FirstName = registrationDto.FirstName,
-                    LastName = registrationDto.LastName,
-                    Email = registrationDto.Email,
-                    DateOfBirth = DateTime.Now,
-                    Address = "",
-                    Gendor = "",
-                    Phone = "",
-                    Status = 1,
-                    Created = DateTime.Now,
-                    Modified = DateTime.Now
-                }
+                Status = 1,
+                CreatorId = identityUser.Id,
+                ModifierId = identityUser.Id,
+                Created = DateTime.Now,
+                Modified = DateTime.Now
             };
 
             await _unitOfWork.Doctors.AddAsync(doctor);

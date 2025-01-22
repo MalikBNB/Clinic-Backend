@@ -33,5 +33,10 @@ namespace Clinic.Api.Controllers
                 Message = message
             };
         }
+
+        internal async Task<IdentityUser> GetLoggedInUserAsync()
+        {
+            return await _userManager.GetUserAsync(HttpContext.User)?? null!;
+        }
     }
 }

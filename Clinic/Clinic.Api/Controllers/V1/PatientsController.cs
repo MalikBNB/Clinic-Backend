@@ -2,12 +2,14 @@
 using Clinic.Configuration.Messages;
 using Clinic.DataService.IConfiguration;
 using Clinic.Entities.DbSets;
+using Clinic.Entities.DTOs.Incoming.Doctors;
 using Clinic.Entities.DTOs.Incoming.Patients;
 using Clinic.Entities.DTOs.Outgoing;
 using Clinic.Entities.Global.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Clinic.Api.Controllers.V1
 {
@@ -29,49 +31,93 @@ namespace Clinic.Api.Controllers.V1
         {
             var result = new Result<PatientDto>();
 
-            var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
+            if (patientDto is null) return BadRequest(result.Error = PopulateError(400,
+                                                                                    ErrorMessages.Generic.InvalidPayload,
+                                                                                    ErrorMessages.Generic.BadRequest));
+
+            var loggedInUser = await GetLoggedInUserAsync();
             if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                                     ErrorMessages.Profile.UserNotFound,
-                                                                                     ErrorMessages.Generic.BadRequest));
+                                                                             ErrorMessages.User.UserNotFound,
+                                                                             ErrorMessages.Generic.ObjectNotFound));
 
-            var patientUser = await _unitOfWork.Users.GetByIdentityIdAsync(new Guid(loggedInUser.Id));
-            if (patientUser is not null) return BadRequest(result.Error = PopulateError(400,
-                                                                                        ErrorMessages.User.PatientAlreadyExist,
-                                                                                        ErrorMessages.Generic.InvalidRequest));
+            var patientExists = await _unitOfWork.Patients.GetByEmailsync(patientDto.Email) is not null;
+            if (patientExists) return BadRequest(result.Error = PopulateError(400,
+                                                                              ErrorMessages.User.DoctorAlreadyExist,
+                                                                              ErrorMessages.Generic.InvalidRequest));
 
-            //var mappedUser = _mapper.Map<User>(patientDto);
+            var newPatient = _mapper.Map<Patient>(patientDto);
+            newPatient.CreatorId = loggedInUser.Id;
+            newPatient.ModifierId = loggedInUser.Id;
+            newPatient.Created = DateTime.Now;
+            newPatient.Modified = DateTime.Now;
 
-            var patient = new Patient
-            {
-                UserId = patientUser.Id,
-                //User = patientUser
-            };
-
-            await _unitOfWork.Patients.AddAsync(patient);
+            await _unitOfWork.Patients.AddAsync(newPatient);
             await _unitOfWork.CompleteAsync();
 
             result.Content = patientDto;
 
-            return CreatedAtRoute("Patient", new { patient.Id }, result);
+            return CreatedAtRoute("Patient", new { newPatient.Id }, result);
         }
 
         [HttpGet("{id}")]
         [Route("Patient")]
-        public async Task<IActionResult> GetPatient([FromQuery] Guid id)
+        public async Task<IActionResult> GetByIdAsync([FromQuery] string id)
         {
             var result = new Result<ProfileDto>();
 
-            var patient = await _unitOfWork.Patients.GetByIdAsync(id);
+            var patient = await _unitOfWork.Patients.GetByIdAsync(new Guid(id));
 
             if (patient is null) return BadRequest(result.Error = PopulateError(404,
-                                             ErrorMessages.User.UserNotFound,
-                                             ErrorMessages.Generic.ObjectNotFound));
+                                                                                ErrorMessages.User.UserNotFound,
+                                                                                ErrorMessages.Generic.ObjectNotFound));
 
             var mappedProfile = _mapper.Map<ProfileDto>(patient);
 
             result.Content = mappedProfile;
 
             return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllAsync()
+        {
+            var pagedResult = new PagedResult<Patient>();
+
+            var patients = await _unitOfWork.Patients.GetAllAsync();
+            if (patients.Any())
+            {
+                pagedResult.Error = PopulateError(404, ErrorMessages.Generic.BadRequest, ErrorMessages.Generic.BadRequest);
+                return BadRequest(pagedResult);
+            }
+
+            pagedResult.Content = patients.ToList();
+            pagedResult.ResultCount = patients.Count();
+
+            return Ok(pagedResult);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync([FromQuery] string id)
+        {
+            var result = new Result<User>();
+
+            var loggedInUser = await GetLoggedInUserAsync();
+            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+                                                                             ErrorMessages.User.UserNotFound,
+                                                                             ErrorMessages.Generic.ObjectNotFound));
+
+            var patient = await _unitOfWork.Patients.GetByIdAsync(new Guid(id));
+            if (patient is null) return BadRequest(result.Error = PopulateError(400,
+                                                                        ErrorMessages.User.UserNotFound,
+                                                                        ErrorMessages.Generic.ObjectNotFound));
+
+            patient.Status = 0;
+            patient.ModifierId = loggedInUser.Id;
+            patient.Modified = DateTime.Now;
+            await _unitOfWork.CompleteAsync();
+
+            return Ok();
+
         }
     }
 }

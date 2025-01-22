@@ -1,6 +1,7 @@
 ﻿using Clinic.DataService.Data;
 using Clinic.DataService.IRepositories;
 using Clinic.Entities.DbSets;
+using Clinic.Entities.DTOs.Incoming.Profile;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
@@ -45,47 +46,28 @@ namespace Clinic.DataService.Repositories
             try
             {
                 return await dbSet.FirstOrDefaultAsync(u => u.IdentityId == identityId
-                                                         && u.Status == 1);
+                                                         && u.Status == 1) ?? null!;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{Repo} Method GetByIdentityId has generated an error", typeof(UsersRepository));
-                return null;
+                return null!;
             }
         }
 
-        //public async Task<User> GetByIdentityIdAsync(Guid identityId, bool isPatient)
-        //{
-        //    try
-        //    {
-        //        if (isPatient)
-        //            return await dbSet.FirstOrDefaultAsync(u => u.IdentityId == identityId
-        //                                                     && u.Status == 1 && u.IsPatient == isPatient);
-
-        //        return await dbSet.FirstOrDefaultAsync(u => u.IdentityId == identityId
-        //                                                     && u.Status == 1 && u.IsDoctor == true);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "{Repo} Method GetByIdentityId has generated an error", typeof(UsersRepository));
-        //        return null;
-        //    }
-        //}
-
-        public override async Task<bool> UpdateAsync(User entity)
+        public async Task<bool> UpdateAsync(Guid id, UpdateProfileDto dto)
         {
             try
             {
-                var userToUpdate = await dbSet.FirstOrDefaultAsync(u => u.IdentityId == entity.IdentityId
+                var userToUpdate = await dbSet.FirstOrDefaultAsync(u => u.Id == id
                                                                      && u.Status == 1);
                 if (userToUpdate is null) return false;
 
-                userToUpdate.Status = entity.Status;
-                userToUpdate.FirstName = entity.FirstName;
-                userToUpdate.LastName = entity.LastName;
-                userToUpdate.Phone = entity.Phone;
-                userToUpdate.Address = entity.Address;
-                userToUpdate.Gendor = entity.Gendor;
+                userToUpdate.DateOfBirth = dto.DateOfBirth;
+                userToUpdate.Phone = dto.Phone;
+                userToUpdate.Address = dto.Address;
+                userToUpdate.Gendor = dto.Gendor;
+                userToUpdate.ModifierId = dto.ModifierId;
                 userToUpdate.Modified = DateTime.Now;
 
                 return true;

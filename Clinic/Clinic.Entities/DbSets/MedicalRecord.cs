@@ -13,8 +13,8 @@ namespace Clinic.Entities.DbSets
         public string Diagnosis { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
 
-        public string AppointmentId { get; set; } = string.Empty ;
-        public Appointment? Appointment { get; set; }
+        public Guid AppointmentId { get; set; }
+        public Appointment Appointment { get; set; } = null!;
 
         public Prescription? Prescription { get; set; }
     }

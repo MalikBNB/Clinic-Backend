@@ -9,56 +9,64 @@ namespace Clinic.Api.Profiles
     {
         public DoctorProfile()
         {
-            CreateMap<User, DoctorDto>()
+            CreateMap<DoctorDto, Doctor>()
                 .ForMember(
                     dest => dest.FirstName,
-                    from => from.MapFrom(user => $"{user.FirstName}")
+                    from => from.MapFrom(dto => $"{dto.FirstName}")
                 )
                 .ForMember(
                     dest => dest.LastName,
-                    from => from.MapFrom(user => $"{user.LastName}")
+                    from => from.MapFrom(dto => $"{dto.LastName}")
                 )
                 .ForMember(
                     dest => dest.Email,
-                    from => from.MapFrom(user => $"{user.Email}")
+                    from => from.MapFrom(dto => $"{dto.Email}")
                 )
                 .ForMember(
                     dest => dest.DateOfBirth,
-                    from => from.MapFrom(user => Convert.ToDateTime(user.DateOfBirth))
-                );
-
-            CreateMap<Doctor, DoctorProfileDto>()
-                .ForMember(
-                    dest => dest.FirstName,
-                    from => from.MapFrom(dto => $"{dto.User.FirstName}")
-                )
-                .ForMember(
-                    dest => dest.LastName,
-                    from => from.MapFrom(dto => $"{dto.User.LastName}")
-                )
-                .ForMember(
-                    dest => dest.Email,
-                    from => from.MapFrom(dto => $"{dto.User.Email}")
+                    from => from.MapFrom(dto => Convert.ToDateTime(dto.DateOfBirth))
                 )
                 .ForMember(
                     dest => dest.Specialization,
                     from => from.MapFrom(dto => $"{dto.Specialization}")
                 )
                 .ForMember(
+                    dest => dest.Status,
+                    from => from.MapFrom(dto => 1)
+                );
+
+            CreateMap<Doctor, DoctorProfileDto>()
+                .ForMember(
+                    dest => dest.FirstName,
+                    from => from.MapFrom(d => $"{d.FirstName}")
+                )
+                .ForMember(
+                    dest => dest.LastName,
+                    from => from.MapFrom(d => $"{d.LastName}")
+                )
+                .ForMember(
+                    dest => dest.Email,
+                    from => from.MapFrom(d => $"{d.Email}")
+                )
+                .ForMember(
+                    dest => dest.Specialization,
+                    from => from.MapFrom(d => $"{d.Specialization}")
+                )
+                .ForMember(
                     dest => dest.DateOfBirth,
-                    from => from.MapFrom(dto => Convert.ToDateTime(dto.User.DateOfBirth))
+                    from => from.MapFrom(d => Convert.ToDateTime(d.DateOfBirth))
                 )
                 .ForMember(
                     dest => dest.Address,
-                    from => from.MapFrom(dto => $"{dto.User.Address}")
+                    from => from.MapFrom(d => $"{d.Address}")
                 )
                 .ForMember(
                     dest => dest.Gendor,
-                    from => from.MapFrom(dto => $"{dto.User.Gendor}")
+                    from => from.MapFrom(d => $"{d.Gendor}")
                 )
                 .ForMember(
                     dest => dest.Phone,
-                    from => from.MapFrom(dto => $"{dto.User.Phone}")
+                    from => from.MapFrom(d => $"{d.Phone}")
                 );
 
         }
