@@ -49,7 +49,19 @@ namespace Clinic.Api.Controllers.V1
             appointmentDto.Created = DateTime.Now;
             appointmentDto.Modified = DateTime.Now;
 
-            var appointment = _mapper.Map<Appointment>(appointmentDto);
+            //var appointment = _mapper.Map<Appointment>(appointmentDto);
+
+            var appointment = new Appointment
+            {
+                Date = appointmentDto.Date,
+                PatientId = Guid.Parse(appointmentDto.PatientId),
+                DoctorId = Guid.Parse(appointmentDto.DoctorId),
+                status = AppointmentStatus.Confirmed,
+                CreatorId = loggedInUser.Id,
+                ModifierId = loggedInUser.Id,
+                Created = DateTime.Now,
+                Modified = DateTime.Now,
+            };
 
             await _unitOfWork.Appointments.AddAsync(appointment);
             await _unitOfWork.CompleteAsync();

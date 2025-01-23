@@ -22,8 +22,8 @@ namespace Clinic.DataService.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            //builder.Entity<Doctor>().HasOne(o => o.User)
-            //       .WithOne(o => o.Doctor)
+            //builder.Entity<Doctor>().HasOne(o => o.Creator)
+            //       .WithMany(o => o.Doctor)
             //       .HasForeignKey<Doctor>(o => o.UserId)
             //       .IsRequired()
             //       .OnDelete(DeleteBehavior.Cascade);

@@ -99,7 +99,6 @@ namespace Clinic.Api.Controllers.V1.Users
                                                                         ErrorMessages.Generic.ObjectNotFound));
 
             user.Status = 0;
-            user.ModifierId = loggedInUser.Id;
             user.Modified = DateTime.Now;
             await _unitOfWork.CompleteAsync();
 

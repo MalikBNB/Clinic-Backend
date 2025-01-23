@@ -67,7 +67,7 @@ namespace Clinic.DataService.Repositories
                 userToUpdate.Phone = dto.Phone;
                 userToUpdate.Address = dto.Address;
                 userToUpdate.Gendor = dto.Gendor;
-                userToUpdate.ModifierId = dto.ModifierId;
+                //userToUpdate.ModifierId = dto.ModifierId;
                 userToUpdate.Modified = DateTime.Now;
 
                 return true;

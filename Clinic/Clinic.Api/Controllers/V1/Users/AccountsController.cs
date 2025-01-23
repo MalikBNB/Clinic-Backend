@@ -3,6 +3,7 @@ using AutoMapper;
 using Clinic.Authentication.Configuration;
 using Clinic.Authentication.Models.DTOs.Incoming;
 using Clinic.Authentication.Models.DTOs.Outgoing;
+using Clinic.Authentication.Models.Interfaces;
 using Clinic.Configuration.Messages;
 using Clinic.DataService.Data;
 using Clinic.DataService.IConfiguration;
@@ -27,6 +28,7 @@ namespace Clinic.Api.Controllers.V1.Users
     {
         private readonly JwtConfig _jwtConfig;
         private readonly TokenValidationParameters _tokenValidationParameters;
+        private IdentityUser _IdentityUser;
 
         public AccountsController(IUnitOfWork unitOfWork,
                                   UserManager<IdentityUser> userManager,
@@ -61,14 +63,7 @@ namespace Clinic.Api.Controllers.V1.Users
                 });
             }
 
-            var identityUser = new IdentityUser
-            {
-                Email = registrationDto.Email,
-                UserName = registrationDto.Email,
-                EmailConfirmed = true
-            };
-
-            var createIdentityUser = await _userManager.CreateAsync(identityUser, registrationDto.Password);
+            var createIdentityUser = await CreateIdentityUser(registrationDto);
             if (!createIdentityUser.Succeeded)
             {
                 return BadRequest(new UserRegistrationResponseDto
@@ -80,7 +75,7 @@ namespace Clinic.Api.Controllers.V1.Users
 
             var newUser = new User
             {
-                IdentityId = new Guid(identityUser.Id),
+                IdentityId = new Guid(_IdentityUser.Id),
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
                 Email = registrationDto.Email,
@@ -89,8 +84,6 @@ namespace Clinic.Api.Controllers.V1.Users
                 Gendor = "",
                 Phone = "",
                 Status = 1,
-                CreatorId = identityUser.Id,
-                ModifierId = identityUser.Id,
                 Created = DateTime.Now,
                 Modified = DateTime.Now
             };
@@ -98,7 +91,7 @@ namespace Clinic.Api.Controllers.V1.Users
             await _unitOfWork.Users.AddAsync(newUser);
             await _unitOfWork.CompleteAsync();
 
-            var tokenData = await GenerateToken(identityUser);
+            var tokenData = await GenerateToken(_IdentityUser);
 
             return Ok(new UserRegistrationResponseDto
             {
@@ -131,14 +124,7 @@ namespace Clinic.Api.Controllers.V1.Users
                 });
             }
 
-            var identityUser = new IdentityUser
-            {
-                Email = registrationDto.Email,
-                UserName = registrationDto.Email,
-                EmailConfirmed = true
-            };
-
-            var createIdentityUser = await _userManager.CreateAsync(identityUser, registrationDto.Password);
+            var createIdentityUser = await CreateIdentityUser(registrationDto);
             if (!createIdentityUser.Succeeded)
             {
                 return BadRequest(new UserRegistrationResponseDto
@@ -150,7 +136,7 @@ namespace Clinic.Api.Controllers.V1.Users
 
             var patient = new Patient
             {
-                IdentityId = new Guid(identityUser.Id),
+                IdentityId = new Guid(_IdentityUser.Id),
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
                 Email = registrationDto.Email,
@@ -159,8 +145,6 @@ namespace Clinic.Api.Controllers.V1.Users
                 Gendor = "",
                 Phone = "",
                 Status = 1,
-                CreatorId = identityUser.Id,
-                ModifierId = identityUser.Id,
                 Created = DateTime.Now,
                 Modified = DateTime.Now
             };
@@ -168,7 +152,7 @@ namespace Clinic.Api.Controllers.V1.Users
             await _unitOfWork.Patients.AddAsync(patient);
             await _unitOfWork.CompleteAsync();
 
-            var tokenData = await GenerateToken(identityUser);
+            var tokenData = await GenerateToken(_IdentityUser);
 
             return Ok(new UserRegistrationResponseDto
             {
@@ -201,14 +185,7 @@ namespace Clinic.Api.Controllers.V1.Users
                 });
             }
 
-            var identityUser = new IdentityUser
-            {
-                Email = registrationDto.Email,
-                UserName = registrationDto.Email,
-                EmailConfirmed = true
-            };
-
-            var createIdentityUser = await _userManager.CreateAsync(identityUser, registrationDto.Password);
+            var createIdentityUser = await CreateIdentityUser(registrationDto);
             if (!createIdentityUser.Succeeded)
             {
                 return BadRequest(new UserRegistrationResponseDto
@@ -220,7 +197,7 @@ namespace Clinic.Api.Controllers.V1.Users
 
             var doctor = new Doctor
             {
-                IdentityId = new Guid(identityUser.Id),
+                IdentityId = new Guid(_IdentityUser.Id),
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
                 Email = registrationDto.Email,
@@ -230,8 +207,6 @@ namespace Clinic.Api.Controllers.V1.Users
                 Phone = "",
                 Specialization = registrationDto.Specialization,
                 Status = 1,
-                CreatorId = identityUser.Id,
-                ModifierId = identityUser.Id,
                 Created = DateTime.Now,
                 Modified = DateTime.Now
             };
@@ -239,7 +214,7 @@ namespace Clinic.Api.Controllers.V1.Users
             await _unitOfWork.Doctors.AddAsync(doctor);
             await _unitOfWork.CompleteAsync();
 
-            var tokenData = await GenerateToken(identityUser);
+            var tokenData = await GenerateToken(_IdentityUser);
 
             return Ok(new UserRegistrationResponseDto
             {
@@ -285,6 +260,19 @@ namespace Clinic.Api.Controllers.V1.Users
             });
         }
 
+
+        private async Task<IdentityResult> CreateIdentityUser(IUserRegistrationRequest registrationDto)
+        {
+            _IdentityUser = new IdentityUser
+            {
+                Email = registrationDto.Email,
+                UserName = registrationDto.Email,
+                EmailConfirmed = true
+            };
+
+            return await _userManager.CreateAsync(_IdentityUser, registrationDto.Password);
+        }
+
         private async Task<TokenData> GenerateToken(IdentityUser user)
         {
             var jwtHandler = new JwtSecurityTokenHandler();
@@ -310,7 +298,6 @@ namespace Clinic.Api.Controllers.V1.Users
 
             var refreshToken = new RefreshToken
             {
-                Created = DateTime.Now,
                 Token = $"{RandomStringGenerator(25)}_{Guid.NewGuid()}",
                 UserId = user.Id,
                 IsRevoked = false,
@@ -318,6 +305,10 @@ namespace Clinic.Api.Controllers.V1.Users
                 Status = 1,
                 JwtId = token.Id,
                 ExpiryDate = DateTime.Now.AddMonths(6),
+                CreatorId = user.Id,
+                ModifierId = user.Id,
+                Created = DateTime.Now,
+                Modified = DateTime.Now,
             };
 
             await _unitOfWork.RefreshTokens.AddAsync(refreshToken);

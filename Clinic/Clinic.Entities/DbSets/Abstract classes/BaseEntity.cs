@@ -12,8 +12,8 @@ namespace Clinic.Entities.DbSets.Abstract_classes
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string CreatorId { get; set; } = string.Empty;
-        public DateTime Created { get; set; }
         public string ModifierId { get; set; } = string.Empty;
+        public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
 
         public IdentityUser Creator { get; set; } = null!;

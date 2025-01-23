@@ -22,24 +22,24 @@ namespace Clinic.Api.Profiles
                 )
                 .ForMember(
                     dest => dest.PatientId,
-                    from => from.MapFrom(dto => dto.PatientId)
+                    from => from.MapFrom(dto => Guid.Parse(dto.PatientId))
                 )
                 .ForMember(
                     dest => dest.DoctorId,
-                    from => from.MapFrom(dto => dto.DoctorId)
+                    from => from.MapFrom(dto => Guid.Parse(dto.DoctorId))
                 )
-                .ForMember(
-                    dest => dest.CreatorId,
-                    from => from.MapFrom(a => a.CreatorId)
-                )
+                //.ForMember(
+                //    dest => dest.CreatorId,
+                //    from => from.MapFrom(a => a.CreatorId)
+                //)
                 .ForMember(
                     dest => dest.Created,
                     from => from.MapFrom(a => a.Created)
                 )
-                .ForMember(
-                    dest => dest.ModifierId,
-                    from => from.MapFrom(a => a.ModifierId)
-                )
+                //.ForMember(
+                //    dest => dest.ModifierId,
+                //    from => from.MapFrom(a => a.ModifierId)
+                //)
                 .ForMember(
                     dest => dest.Modified,
                     from => from.MapFrom(a => a.Modified)

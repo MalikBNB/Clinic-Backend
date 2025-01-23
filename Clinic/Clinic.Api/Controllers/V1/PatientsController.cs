@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Clinic.Configuration.Messages;
 using Clinic.DataService.IConfiguration;
 using Clinic.Entities.DbSets;
@@ -6,6 +7,9 @@ using Clinic.Entities.DTOs.Incoming.Doctors;
 using Clinic.Entities.DTOs.Incoming.Patients;
 using Clinic.Entities.DTOs.Outgoing;
 using Clinic.Entities.Global.Generic;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +17,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Clinic.Api.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:ApiVersion}/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PatientsController : BaseController
     {
 
@@ -46,8 +52,8 @@ namespace Clinic.Api.Controllers.V1
                                                                               ErrorMessages.Generic.InvalidRequest));
 
             var newPatient = _mapper.Map<Patient>(patientDto);
-            newPatient.CreatorId = loggedInUser.Id;
-            newPatient.ModifierId = loggedInUser.Id;
+            //newPatient.CreatorId = loggedInUser.Id;
+            //newPatient.ModifierId = loggedInUser.Id;
             newPatient.Created = DateTime.Now;
             newPatient.Modified = DateTime.Now;
 
@@ -112,7 +118,7 @@ namespace Clinic.Api.Controllers.V1
                                                                         ErrorMessages.Generic.ObjectNotFound));
 
             patient.Status = 0;
-            patient.ModifierId = loggedInUser.Id;
+            //patient.ModifierId = loggedInUser.Id;
             patient.Modified = DateTime.Now;
             await _unitOfWork.CompleteAsync();
 

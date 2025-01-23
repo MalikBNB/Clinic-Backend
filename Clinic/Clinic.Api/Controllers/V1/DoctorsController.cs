@@ -45,8 +45,8 @@ namespace Clinic.Api.Controllers.V1
                                                                              ErrorMessages.Generic.InvalidRequest));
 
             var newDoctor = _mapper.Map<Doctor>(doctorDto);
-            newDoctor.CreatorId = loggedInUser.Id;
-            newDoctor.ModifierId = loggedInUser.Id;
+            //newDoctor.CreatorId = loggedInUser.Id;
+            //newDoctor.ModifierId = loggedInUser.Id;
             newDoctor.Created = DateTime.Now;
             newDoctor.Modified = DateTime.Now;
             
@@ -109,7 +109,7 @@ namespace Clinic.Api.Controllers.V1
                                                                         ErrorMessages.Generic.ObjectNotFound));
 
             doctor.Status = 0;
-            doctor.ModifierId = loggedInUser.Id;
+            //doctor.ModifierId = loggedInUser.Id;
             doctor.Modified = DateTime.Now;
             await _unitOfWork.CompleteAsync();
 
