@@ -19,7 +19,7 @@ namespace Clinic.DataService.IRepositories
         Task<T> GetByEmailsync(string email);
         Task<bool> AddAsync(T entity);
         Task<bool> UpdateAsync(T entity);
-        Task<bool> DeleteAsync(Guid id, string userId);
+        Task<bool> DeleteAsync(Guid id);
         Task<bool> DeleteAsync(T entity);
         bool Delete(T entity);
     }

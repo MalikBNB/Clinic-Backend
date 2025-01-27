@@ -27,8 +27,7 @@ namespace Clinic.Api.Controllers.V1.Users
         { }
 
 
-        [HttpGet]
-        [Route("{id}/User")]
+        [HttpGet("User/{id}")]
         public async Task<IActionResult> GetUserProfile([FromQuery] string id)
         {
             var result = new Result<ProfileDto>();
@@ -44,8 +43,7 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("{id}/Doctor")]
+        [HttpGet("Doctor/{id}")]
         public async Task<IActionResult> GetDoctorProfile([FromQuery] string id)
         {
             var result = new Result<DoctorProfileDto>();
@@ -61,8 +59,7 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("{id}/Patient")]
+        [HttpGet("Patient/{id}")]
         public async Task<IActionResult> GetPatientProfile([FromQuery] string id)
         {
             var result = new Result<ProfileDto>();
@@ -78,8 +75,7 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpPut]
-        [Route("{id}/User")]
+        [HttpPut("User/{id}")]
         public async Task<IActionResult> UpdateProfile([FromQuery]string id, [FromBody] UpdateProfileDto profileDto)
         {
             var result = new Result<UpdateProfileDto>();
@@ -109,8 +105,7 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpPut]
-        [Route("{id}/Doctor")]
+        [HttpPut(("Doctor/{id}"))]
         public async Task<IActionResult> UpdateDoctorProfile([FromQuery] string id, [FromBody] UpdateDoctorProfileDto doctorProfileDto)
         {
             var result = new Result<UpdateDoctorProfileDto>();
@@ -125,10 +120,11 @@ namespace Clinic.Api.Controllers.V1.Users
                                                                ErrorMessages.Generic.InvalidPayload,
                                                                ErrorMessages.Generic.BadRequest));
 
+            doctorProfileDto.Id = id;
             doctorProfileDto.ModifierId = loggedInUser.Id;
             doctorProfileDto.Modified = DateTime.Now;
 
-            var isUpdated = await _unitOfWork.Doctors.UpdateAsync(new Guid(id), doctorProfileDto);
+            var isUpdated = await _unitOfWork.Doctors.UpdateAsync(doctorProfileDto);
             if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
                                                                           ErrorMessages.Generic.SomethingWentWrong,
                                                                           ErrorMessages.Generic.UnableToProcess));

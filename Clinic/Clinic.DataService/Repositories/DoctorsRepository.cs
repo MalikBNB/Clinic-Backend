@@ -34,12 +34,12 @@ namespace Clinic.DataService.Repositories
 
         public override async Task<Doctor> GetByIdAsync(Guid id)
         {
-            return await dbSet.FirstOrDefaultAsync(d => d.Id == id && d.Status == 1);
+            return await dbSet.FirstOrDefaultAsync(d => d.Id == id && d.Status == 1) ?? null!;
         }
 
         public override async Task<Doctor> GetByIdentityIdAsync(Guid identityId)
         {
-            return await dbSet.FirstOrDefaultAsync(d => d.IdentityId == identityId && d.Status == 1);
+            return await dbSet.FirstOrDefaultAsync(d => d.IdentityId == identityId && d.Status == 1) ?? null!;
         }
 
         public async Task<IEnumerable<Doctor>> GetBySpeciality(string speciality)
@@ -54,11 +54,11 @@ namespace Clinic.DataService.Repositories
             return await dbSet.SingleOrDefaultAsync(d => d.Email == email) != null;
         }
 
-        public async Task<bool> UpdateAsync(Guid id, UpdateDoctorProfileDto dto)
+        public async Task<bool> UpdateAsync(UpdateDoctorProfileDto dto)
         {
             try
             {
-                var doctorToUpdate = await dbSet.FirstOrDefaultAsync(u => u.Id == id
+                var doctorToUpdate = await dbSet.FirstOrDefaultAsync(u => u.Id == new Guid(dto.Id)
                                                                      && u.Status == 1);
                 if (doctorToUpdate is null) return false;
 
@@ -79,5 +79,7 @@ namespace Clinic.DataService.Repositories
                 return false;
             }
         }
+
+       
     }
 }

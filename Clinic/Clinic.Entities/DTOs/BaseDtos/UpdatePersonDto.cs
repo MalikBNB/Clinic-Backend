@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace Clinic.Entities.DTOs.BaseDtos;
 public class UpdatePersonDto
 {
+    public string Id { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public DateTime DateOfBirth { get; set; }

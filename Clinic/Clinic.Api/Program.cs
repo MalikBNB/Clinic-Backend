@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -27,7 +28,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection(JwtConfig.SectionName));
 
-var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:Secret"]);
+var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:Secret"] ?? null!);
 var tokenValidationParameters = new TokenValidationParameters
 {
     ValidateIssuerSigningKey = true,
@@ -46,10 +47,10 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(jwt =>
-  {
-        jwt.SaveToken = true;
-        jwt.TokenValidationParameters = tokenValidationParameters;
-  });
+                      {
+                        jwt.SaveToken = true;
+                        jwt.TokenValidationParameters = tokenValidationParameters;
+                      });
 
 builder.Services.AddApiVersioning(options =>
 {

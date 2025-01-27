@@ -35,9 +35,14 @@ namespace Clinic.DataService.Repositories
             throw new NotImplementedException();
         }
 
-        public virtual Task<bool> DeleteAsync(Guid id, string userId)
+        public virtual async Task<bool> DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var entity = await dbSet.FindAsync(id);
+
+            if (entity is null)
+                return false;
+
+            return await Task.Run(() => Delete(entity));
         }
 
         public virtual bool Delete(T entity)

@@ -11,8 +11,7 @@ namespace Clinic.DataService.IRepositories
     public interface IDoctorsRepository : IGenericRepository<Doctor>
     {
         Task<IEnumerable<Doctor>> GetBySpeciality(string peciality);
-        Task<bool> UpdateAsync(Guid id, UpdateDoctorProfileDto dto);
-
+        Task<bool> UpdateAsync(UpdateDoctorProfileDto dto);
         Task<bool> IsDoctorExists(string email);
     }
 }

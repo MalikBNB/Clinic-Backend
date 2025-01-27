@@ -25,8 +25,29 @@ public class MedicalRecordsController : BaseController
     }
 
 
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllAsync()
+    {
+        var result = new PagedResult<MedicalRecordsResponseDto>();
+
+        var medicalRecords = await _unitOfWork.MedicalRecords.GetAllAsync(["Appointment"]);
+        if (medicalRecords.Count() == 0)
+            return BadRequest(result.Error = PopulateError(404,
+                                                           ErrorMessages.Generic.ObjectNotFound,
+                                                           ErrorMessages.Generic.ObjectNotFound));
+
+        foreach(var record in medicalRecords)
+            result.Content.Add(_mapper.Map<MedicalRecordsResponseDto>(record));
+
+        result.ResultCount = result.Content.Count;
+
+        return Ok(result);
+    }
+    
     [HttpGet("{id}", Name = "MedicalRecord")]
-    public async Task<IActionResult> GetAsync([FromQuery] string id)
+    [AllowAnonymous]
+    public async Task<IActionResult> FindAsync([FromQuery] string id)
     {
         var result = new Result<MedicalRecordsResponseDto>();
 
@@ -85,11 +106,11 @@ public class MedicalRecordsController : BaseController
 
         result.Content = medicalRecordDto;
 
-        return CreatedAtRoute($"MedicalRecord", new { id = newMedicalRecord.Id }, result);
+        return CreatedAtRoute("MedicalRecord", new { id = newMedicalRecord.Id }, result);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> UpdateAsync([FromBody] MedicalRecordDto medicalRecordDto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateAsync(string id, [FromBody] MedicalRecordDto medicalRecordDto)
     {
         var result = new Result<MedicalRecordDto>();
 
@@ -104,6 +125,7 @@ public class MedicalRecordsController : BaseController
                                                            ErrorMessages.User.UserNotFound,
                                                            ErrorMessages.Generic.ObjectNotFound));
 
+        medicalRecordDto.Id = id;
         medicalRecordDto.ModifierId = loggedInUser.Id;
         medicalRecordDto.Modified = DateTime.Now;
 
@@ -118,8 +140,8 @@ public class MedicalRecordsController : BaseController
         return Ok();
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> DeleteAsync([FromQuery] string id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteAsync(string id)
     {
         var result = new Result<MedicalRecord>();
 
