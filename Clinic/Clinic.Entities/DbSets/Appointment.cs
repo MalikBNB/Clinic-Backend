@@ -24,8 +24,8 @@ namespace Clinic.Entities.DbSets
 
     public enum AppointmentStatus
     {
-        //Pending,
-        Confirmed = 1, 
+        Pending = 1,
+        Confirmed, 
         Completed,
         Canceled,
         Rescheduled,

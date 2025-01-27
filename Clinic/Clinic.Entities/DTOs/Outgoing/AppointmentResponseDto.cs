@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Clinic.Entities.DbSets;
+using Microsoft.AspNetCore.Identity;
 
 namespace Clinic.Entities.DTOs.Outgoing
 {
@@ -13,14 +14,15 @@ namespace Clinic.Entities.DTOs.Outgoing
         public DateTime Date { get; set; }
         public AppointmentStatus status { get; set; }
         public string PatientId { get; set; } = string.Empty;
-        public Patient Patient { get; set; } = null!;
+        public string Patient { get; set; } = string.Empty;
         public string DoctorId { get; set; } = string.Empty;
-        public Doctor Doctor { get; set; } = null!;
+        public string Doctor { get; set; } = string.Empty;
+        public string Specialization { get; set; } = string.Empty;
         public string CreatorId { get; set; } = string.Empty;
-        public User Creator { get; set; } = null!;
+        public IdentityUser Creator { get; set; } = null!;
         public DateTime Created { get; set; }
         public string ModifierId { get; set; } = string.Empty;
-        public User Modifier { get; set; } = null!;
+        public IdentityUser Modifier { get; set; } = null!;
         public DateTime Modified { get; set; }
     }
 }

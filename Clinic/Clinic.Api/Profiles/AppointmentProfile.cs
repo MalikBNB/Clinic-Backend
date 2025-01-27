@@ -64,7 +64,7 @@ namespace Clinic.Api.Profiles
                 )
                 .ForMember(
                     dest => dest.Patient,
-                    from => from.MapFrom(a => a.Patient)
+                    from => from.MapFrom(a => a.Patient.FullName)
                 )
                 .ForMember(
                     dest => dest.DoctorId,
@@ -72,16 +72,20 @@ namespace Clinic.Api.Profiles
                 )
                 .ForMember(
                     dest => dest.Doctor,
-                    from => from.MapFrom(a => a.Doctor)
+                    from => from.MapFrom(a => a.Doctor.FullName)
+                )
+                .ForMember(
+                    dest => dest.Specialization,
+                    from => from.MapFrom(a => a.Doctor.Specialization)
                 )
                 .ForMember(
                     dest => dest.CreatorId,
                     from => from.MapFrom(a => a.CreatorId)
                 )
-                .ForMember(
-                    dest => dest.Creator,
-                    from => from.MapFrom(a => a.Creator)
-                )
+                //.ForMember(
+                //    dest => dest.Creator,
+                //    from => from.MapFrom(a => a.Creator)
+                //)
                 .ForMember(
                     dest => dest.Created,
                     from => from.MapFrom(a => a.Created)
@@ -90,10 +94,10 @@ namespace Clinic.Api.Profiles
                     dest => dest.ModifierId,
                     from => from.MapFrom(a => a.ModifierId)
                 )
-                .ForMember(
-                    dest => dest.Modifier,
-                    from => from.MapFrom(a => a.Modifier)
-                )
+                //.ForMember(
+                //    dest => dest.Modifier,
+                //    from => from.MapFrom(a => a.Modifier)
+                //)
                 .ForMember(
                     dest => dest.Modified,
                     from => from.MapFrom(a => a.Modified)

@@ -43,7 +43,7 @@ namespace Clinic.Api.Controllers.V1
                                                                              ErrorMessages.User.UserNotFound,
                                                                              ErrorMessages.Generic.ObjectNotFound));
 
-            appointmentDto.status = AppointmentStatus.Confirmed;
+            appointmentDto.status = AppointmentStatus.Pending;
             appointmentDto.CreatorId = loggedInUser.Id;
             appointmentDto.ModifierId = loggedInUser.Id;
             appointmentDto.Created = DateTime.Now;
@@ -63,7 +63,11 @@ namespace Clinic.Api.Controllers.V1
                 Modified = DateTime.Now,
             };
 
-            await _unitOfWork.Appointments.AddAsync(appointment);
+            var isAdded = await _unitOfWork.Appointments.AddAsync(appointment);
+            if (!isAdded)
+                return BadRequest(result.Error = PopulateError(500,
+                                                               ErrorMessages.Generic.SomethingWentWrong,
+                                                               ErrorMessages.Generic.UnableToProcess));
             await _unitOfWork.CompleteAsync();
 
             result.Content = appointmentDto;
@@ -71,12 +75,13 @@ namespace Clinic.Api.Controllers.V1
             return CreatedAtRoute("Appointment", new { appointment.Id }, result);
         }
 
-        [HttpGet("{id},{isForPatient}")]
+        [HttpGet("{id}, {isForPatient}")]
         [Route("Patient")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllAsync(string id, bool isForPatient) // Get all appointments by patientId or doctorId
+        public async Task<IActionResult> GetAllAsync([FromQuery]string id, [FromQuery]bool isForPatient) // Get all appointments by patientId or doctorId
         {
             var result = new PagedResult<AppointmentResponseDto>();
+            result.Content = new List<AppointmentResponseDto>();
             var appointments = new List<Appointment>();
 
             if (isForPatient)
@@ -86,18 +91,14 @@ namespace Clinic.Api.Controllers.V1
                 appointments = await _unitOfWork.Appointments.GetAllAsync(a => a.DoctorId == new Guid(id) && a.status == AppointmentStatus.Confirmed,
                                                                          ["Patient", "Doctor"]);
 
-            if (appointments.Count == 0)
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.ObjectNotFound,
-                                                               ErrorMessages.Generic.BadRequest));
-
+            result.ResultCount = appointments.Count;
             foreach (var item in appointments)
                 result.Content.Add(_mapper.Map<AppointmentResponseDto>(item));
 
             return Ok(result);
 
         }
-        
+
         [HttpGet("{id}")]
         [Route("Appointment")]
         [AllowAnonymous]
@@ -105,17 +106,38 @@ namespace Clinic.Api.Controllers.V1
         {
             var result = new Result<AppointmentResponseDto>();
 
-            var appointment = await _unitOfWork.Appointments.FindAsync(new Guid(id), ["Patient", "Doctor"]);
-
-            if (appointment is null) 
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.ObjectNotFound,
-                                                               ErrorMessages.Generic.BadRequest));
+            var appointment = await _unitOfWork.Appointments.FindAsync(o => o.Id == new Guid(id), ["Patient", "Doctor"]);
 
             result.Content = _mapper.Map<AppointmentResponseDto>(appointment);
 
             return Ok(result);
 
+        }
+
+        [HttpPut]
+        [Route("Appointment/Confirmation")]
+        public async Task<IActionResult> ConfirmAsync([FromQuery] string id)
+        {
+            var result = new Result<AppointmentDto>();
+
+            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id) && a.status == AppointmentStatus.Pending);
+            if (appointment is null)
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.ObjectNotFound,
+                                                               ErrorMessages.Generic.BadRequest));
+
+            var loggedInUser = await GetLoggedInUserAsync();
+            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+                                                                             ErrorMessages.User.UserNotFound,
+                                                                             ErrorMessages.Generic.ObjectNotFound));
+
+            appointment.status = AppointmentStatus.Confirmed;
+            appointment.ModifierId = loggedInUser.Id;
+            appointment.Modified = DateTime.Now;
+
+            await _unitOfWork.CompleteAsync();
+
+            return Ok();
         }
 
         [HttpPut]
@@ -133,14 +155,13 @@ namespace Clinic.Api.Controllers.V1
                                                                              ErrorMessages.User.UserNotFound,
                                                                              ErrorMessages.Generic.ObjectNotFound));
 
-            var oldAppointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(appointmentDto.Id)
-                                                                       && a.status == AppointmentStatus.Confirmed 
-                                                                       || a.status == AppointmentStatus.NoShow);
+            appointmentDto.ModifierId = loggedInUser.Id;
+            appointmentDto.Modified = DateTime.Now;
 
-            oldAppointment.Date = appointmentDto.Date;
-            oldAppointment.status = AppointmentStatus.Rescheduled;
-            oldAppointment.ModifierId = loggedInUser.Id;
-            oldAppointment.Modified = DateTime.Now;
+            var isUpdated = await _unitOfWork.Appointments.UpdateAsync(appointmentDto);
+            if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
+                                                                          ErrorMessages.Generic.SomethingWentWrong,
+                                                                          ErrorMessages.Generic.UnableToProcess));
 
             await _unitOfWork.CompleteAsync();
 
@@ -184,7 +205,7 @@ namespace Clinic.Api.Controllers.V1
         }
 
         [HttpPut("{ids}")]
-        [Route("Appointment/NoShow")]
+        [Route("NoShow")]
         public async Task<IActionResult> SetToNoShowAsync(List<string> ids)
         {
             var result = new Result<AppointmentDto>();
@@ -215,6 +236,58 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
+        [HttpPut("{id}")]
+        [Route("Appointment/NoShow")]
+        public async Task<IActionResult> SetToNoShowAsync(string id)
+        {
+            var result = new Result<AppointmentDto>();
 
+            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id) && a.Date > DateTime.Now && a.status == AppointmentStatus.Confirmed);
+            if (appointment is null)
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.ObjectNotFound,
+                                                               ErrorMessages.Generic.BadRequest));
+
+            var loggedInUser = await GetLoggedInUserAsync();
+            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+                                                                             ErrorMessages.User.UserNotFound,
+                                                                             ErrorMessages.Generic.ObjectNotFound));
+
+            appointment.status = AppointmentStatus.NoShow;
+            appointment.ModifierId = loggedInUser.Id;
+            appointment.Modified = DateTime.Now;
+
+            await _unitOfWork.CompleteAsync();
+
+            return Ok();
+        }
+
+        [HttpPut("{id}")]
+        [Route("Appointment/Complete")]
+        public async Task<IActionResult> CompleteAsync(string id)
+        {
+            var result = new Result<AppointmentDto>();
+
+            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id) && a.status == AppointmentStatus.Confirmed);
+            if (appointment is null)
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.ObjectNotFound,
+                                                               ErrorMessages.Generic.BadRequest));
+
+            var loggedInUser = await GetLoggedInUserAsync();
+            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+                                                                             ErrorMessages.User.UserNotFound,
+                                                                             ErrorMessages.Generic.ObjectNotFound));
+
+            appointment.status = AppointmentStatus.Completed;
+            appointment.ModifierId = loggedInUser.Id;
+            appointment.Modified = DateTime.Now;
+
+            await _unitOfWork.CompleteAsync();
+
+            return Ok();
+        }
     }
+
+
 }
