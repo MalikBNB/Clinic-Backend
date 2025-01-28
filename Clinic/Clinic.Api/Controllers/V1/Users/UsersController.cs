@@ -6,6 +6,8 @@ using Clinic.Entities.DbSets;
 using Clinic.Entities.DTOs.Incoming.Users;
 using Clinic.Entities.DTOs.Outgoing;
 using Clinic.Entities.Global.Generic;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +17,11 @@ namespace Clinic.Api.Controllers.V1.Users
     [ApiVersion("1.0")]
     [Route("api/v{version:ApiVersion}/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] 
     public class UsersController : BaseController
     {
-        public UsersController(IUnitOfWork unitOfWork,
-                               UserManager<IdentityUser> userManager,
-                               IMapper mapper) : base(unitOfWork, userManager, mapper) { }
+        public UsersController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, IMapper mapper) 
+            : base(unitOfWork, userManager, mapper) { }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -27,7 +29,7 @@ namespace Clinic.Api.Controllers.V1.Users
             var pagedResult = new PagedResult<User>();
 
             var users = await _unitOfWork.Users.GetAllAsync();
-            if (users.Any())
+            if (!users.Any())
             {
                 pagedResult.Error = PopulateError(404, ErrorMessages.Generic.BadRequest, ErrorMessages.Generic.BadRequest);
                 return BadRequest(pagedResult);
@@ -40,12 +42,11 @@ namespace Clinic.Api.Controllers.V1.Users
         }
 
         [HttpGet("{id}")]
-        [Route("User")]
         public async Task<IActionResult> GetUser(string id)
         {
             var result = new Result<ProfileDto>();
 
-            var user = await _unitOfWork.Users.GetByIdAsync(new Guid(id));
+            var user = await _unitOfWork.Users.FindAsync(u => u.Id == new Guid(id) && u.Status == 1);
 
             if (user is null)
             {
@@ -63,43 +64,37 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpPost("User")]
-        public async Task<IActionResult> AddAsync([FromBody] UserDto userDto)
-        {
-            var result = new Result<UserDto>();
+        //[HttpPost]
+        //public async Task<IActionResult> AddAsync([FromBody] UserDto userDto)
+        //{
+        //    var result = new Result<UserDto>();
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+        //    var loggedInUser = await GetLoggedInUserAsync();
+        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                             ErrorMessages.User.UserNotFound,
+        //                                                                             ErrorMessages.Generic.ObjectNotFound));
 
-            var mappedUser = _mapper.Map<User>(userDto);
+        //    var mappedUser = _mapper.Map<User>(userDto);
 
-            await _unitOfWork.Users.AddAsync(mappedUser);
-            await _unitOfWork.CompleteAsync();
+        //    await _unitOfWork.Users.AddAsync(mappedUser);
+        //    await _unitOfWork.CompleteAsync();
 
-            result.Content = userDto;
+        //    result.Content = userDto;
 
-            return CreatedAtRoute("User", new { mappedUser.Id }, result);
-        }
+        //    return CreatedAtRoute("User", new {id = mappedUser.Id }, result);
+        //}
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync([FromQuery] string id)
+        public async Task<IActionResult> DeleteAsync(string id)
         {
             var result = new Result<User>();
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+            var isDeleted = await _unitOfWork.Users.DeleteAsync(new Guid(id));
+            if (!isDeleted) 
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.SomethingWentWrong,
+                                                               ErrorMessages.Generic.InvalidRequest));           
 
-            var user = await _unitOfWork.Users.GetByIdAsync(new Guid(id));
-            if (user is null) return BadRequest(result.Error = PopulateError(400,
-                                                                        ErrorMessages.User.UserNotFound,
-                                                                        ErrorMessages.Generic.ObjectNotFound));
-
-            user.Status = 0;
-            user.Modified = DateTime.Now;
             await _unitOfWork.CompleteAsync();
 
             return Ok();

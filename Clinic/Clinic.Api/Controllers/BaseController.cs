@@ -36,7 +36,7 @@ namespace Clinic.Api.Controllers
 
         internal async Task<IdentityUser> GetLoggedInUserAsync()
         {
-            return await _userManager.GetUserAsync(HttpContext.User)?? null!;
+            return await _userManager.GetUserAsync(HttpContext.User) ?? null!;
         }
     }
 }

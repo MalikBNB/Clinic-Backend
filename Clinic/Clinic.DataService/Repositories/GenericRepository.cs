@@ -41,7 +41,7 @@ namespace Clinic.DataService.Repositories
 
             if (entity is null)
                 return false;
-
+            
             return await Task.Run(() => Delete(entity));
         }
 

@@ -40,8 +40,7 @@ namespace Clinic.Api.Controllers.V1.Users
             _tokenValidationParameters = tokenValidationParameters;
         }
 
-        [HttpPost]
-        [Route("User/Register")]
+        [HttpPost("User/Register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequestDto registrationDto)
         {
             if (!ModelState.IsValid)
@@ -78,6 +77,7 @@ namespace Clinic.Api.Controllers.V1.Users
                 IdentityId = new Guid(_IdentityUser.Id),
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
+                UserName = registrationDto.UserName,
                 Email = registrationDto.Email,
                 DateOfBirth = DateTime.Now,
                 Address = "",
@@ -101,8 +101,7 @@ namespace Clinic.Api.Controllers.V1.Users
             });
         }
 
-        [HttpPost]
-        [Route("Patient/Register")]
+        [HttpPost("Patient/Register")]
         public async Task<IActionResult> Register([FromBody] PatientRegistrationRequestDto registrationDto)
         {
             if (!ModelState.IsValid)
@@ -162,8 +161,7 @@ namespace Clinic.Api.Controllers.V1.Users
             });
         }
 
-        [HttpPost]
-        [Route("Doctor/Register")]
+        [HttpPost("Doctor/Register")]
         public async Task<IActionResult> Register([FromBody] DoctorRegistrationRequestDto registrationDto)
         {
             if (!ModelState.IsValid)
@@ -224,8 +222,7 @@ namespace Clinic.Api.Controllers.V1.Users
             });
         }
 
-        [HttpPost]
-        [Route("Login")]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequestDto loginDto)
         {
             if (!ModelState.IsValid)

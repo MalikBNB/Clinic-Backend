@@ -29,7 +29,6 @@ namespace Clinic.Api.Controllers.V1
 
 
         [HttpPost]
-        [Route("Appointment")]
         public async Task<IActionResult> AddAsync([FromBody] AppointmentDto appointmentDto)
         {
             var result = new Result<AppointmentDto>();
@@ -75,10 +74,9 @@ namespace Clinic.Api.Controllers.V1
             return CreatedAtRoute("Appointment", new { appointment.Id }, result);
         }
 
-        [HttpGet("{id}, {isForPatient}")]
-        [Route("Patient")]
+        [HttpGet("{id}/{isForPatient}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllAsync([FromQuery]string id, [FromQuery]bool isForPatient) // Get all appointments by patientId or doctorId
+        public async Task<IActionResult> GetAllAsync(string id, bool isForPatient) // Get all appointments by patientId or doctorId
         {
             var result = new PagedResult<AppointmentResponseDto>();
             result.Content = new List<AppointmentResponseDto>();
@@ -99,10 +97,9 @@ namespace Clinic.Api.Controllers.V1
 
         }
 
-        [HttpGet("{id}")]
-        [Route("Appointment")]
+        [HttpGet("Appointment/{id}", Name = "Appointment")]
         [AllowAnonymous]
-        public async Task<IActionResult> FindAsync([FromQuery]string id)
+        public async Task<IActionResult> FindAsync(string id)
         {
             var result = new Result<AppointmentResponseDto>();
 
@@ -114,9 +111,8 @@ namespace Clinic.Api.Controllers.V1
 
         }
 
-        [HttpPut]
-        [Route("Appointment/Confirmation")]
-        public async Task<IActionResult> ConfirmAsync([FromQuery] string id)
+        [HttpPut("{id}/Confirmation")]
+        public async Task<IActionResult> ConfirmAsync(string id)
         {
             var result = new Result<AppointmentDto>();
 
@@ -140,8 +136,7 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
-        [HttpPut]
-        [Route("Appointment/Reschedule")]
+        [HttpPut("{id}/Reschedule")]
         public async Task<IActionResult> RescheduleAsync([FromBody] AppointmentDto appointmentDto)
         {
             var result = new Result<AppointmentDto>();
@@ -168,9 +163,8 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
-        [HttpPut("{id}")]
-        [Route("Appointment/Cancel")]
-        public async Task<IActionResult> CancelAsync([FromQuery] string id)
+        [HttpPut("{id}/Cancel")]
+        public async Task<IActionResult> CancelAsync(string id)
         {
             var result = new Result<AppointmentDto>();
 
@@ -204,9 +198,8 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
-        [HttpPut("{ids}")]
-        [Route("NoShow")]
-        public async Task<IActionResult> SetToNoShowAsync(List<string> ids)
+        [HttpPut("NoShow")]
+        public async Task<IActionResult> SetToNoShowAsync([FromBody] List<string> ids)
         {
             var result = new Result<AppointmentDto>();
 
@@ -236,8 +229,7 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
-        [HttpPut("{id}")]
-        [Route("Appointment/NoShow")]
+        [HttpPut("{id}/NoShow")]
         public async Task<IActionResult> SetToNoShowAsync(string id)
         {
             var result = new Result<AppointmentDto>();
@@ -262,8 +254,7 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
-        [HttpPut("{id}")]
-        [Route("Appointment/Complete")]
+        [HttpPut("{id}/Complete")]
         public async Task<IActionResult> CompleteAsync(string id)
         {
             var result = new Result<AppointmentDto>();

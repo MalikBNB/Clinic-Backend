@@ -62,8 +62,6 @@ namespace Clinic.DataService.Repositories
                                                                      && u.Status == 1);
                 if (doctorToUpdate is null) return false;
 
-                doctorToUpdate.FirstName = dto.FirstName;
-                doctorToUpdate.LastName = dto.LastName;
                 doctorToUpdate.DateOfBirth = dto.DateOfBirth;
                 doctorToUpdate.Specialization = dto.Sepecialization;
                 doctorToUpdate.Phone = dto.Phone;
@@ -80,6 +78,15 @@ namespace Clinic.DataService.Repositories
             }
         }
 
-       
+        public override async Task<bool> DeleteAsync(Guid id)
+        {
+            var doctor = await dbSet.FindAsync(id);
+            if (doctor == null) return false;
+
+            doctor.Status = 0;
+            doctor.Modified = DateTime.Now;
+
+            return true;
+        }
     }
 }

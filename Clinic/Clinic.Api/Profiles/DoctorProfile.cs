@@ -9,6 +9,8 @@ namespace Clinic.Api.Profiles
     {
         public DoctorProfile()
         {
+            #region DoctorDto ==> Doctor
+
             CreateMap<DoctorDto, Doctor>()
                 .ForMember(
                     dest => dest.FirstName,
@@ -34,6 +36,10 @@ namespace Clinic.Api.Profiles
                     dest => dest.Status,
                     from => from.MapFrom(dto => 1)
                 );
+
+            #endregion DoctorDto ==> Doctor
+
+            #region Doctor ==> DoctorProfileDto
 
             CreateMap<Doctor, DoctorProfileDto>()
                 .ForMember(
@@ -68,6 +74,8 @@ namespace Clinic.Api.Profiles
                     dest => dest.Phone,
                     from => from.MapFrom(d => $"{d.Phone}")
                 );
+
+            #endregion Doctor ==> DoctorProfileDto
 
         }
     }

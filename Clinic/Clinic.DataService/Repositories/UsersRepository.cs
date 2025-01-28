@@ -25,9 +25,10 @@ namespace Clinic.DataService.Repositories
         {
             try
             {
-                return await dbSet.Where(u => u.Status == 1)
-                                    .AsNoTracking()
-                                    .ToListAsync();
+                if(trackObject)
+                    return await dbSet.Where(u => u.Status == 1).ToListAsync();
+
+                return await dbSet.Where(u => u.Status == 1).AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -67,7 +68,6 @@ namespace Clinic.DataService.Repositories
                 userToUpdate.Phone = dto.Phone;
                 userToUpdate.Address = dto.Address;
                 userToUpdate.Gendor = dto.Gendor;
-                //userToUpdate.ModifierId = dto.ModifierId;
                 userToUpdate.Modified = DateTime.Now;
 
                 return true;
@@ -79,5 +79,15 @@ namespace Clinic.DataService.Repositories
             }
         }
 
+        public override async Task<bool> DeleteAsync(Guid id)
+        {
+            var user = await dbSet.FindAsync(id);
+            if (user is null) return false;
+
+            user.Status = 0;
+            user.Modified = DateTime.Now;
+
+            return true;
+        }
     }
 }
