@@ -3,25 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Clinic.Entities.DbSets.Abstract_classes;
+using Clinic.Entities.DbSets;
 
-namespace Clinic.Entities.DbSets
+namespace Clinic.Entities.DTOs.Incoming.Payments
 {
-    public class Payment : BaseEntity
+    public class PaymentsDto
     {
         public DateTime Date { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public decimal Amount { get; set; }
         public string Notes { get; set; } = string.Empty;
-
-        public Guid AppointmentId { get; set; }
-        public Appointment Appointment { get; set; } = null!;
-    }
-
-    public enum PaymentMethod
-    {
-        Cash = 1,
-        Card,
-        Check
+        public string AppointmentId { get; set; } = string.Empty;
     }
 }

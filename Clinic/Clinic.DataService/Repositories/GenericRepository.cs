@@ -26,8 +26,16 @@ namespace Clinic.DataService.Repositories
 
         public virtual async Task<bool> AddAsync(T entity)
         {
-            await dbSet.AddAsync(entity);
-            return true;
+            try
+            {
+                await dbSet.AddAsync(entity);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method AddAsync has generated an error", typeof(GenericRepository<T>));
+                return false;
+            }
         }
 
         public virtual async Task<bool> UpdateAsync(T entity)
@@ -37,38 +45,86 @@ namespace Clinic.DataService.Repositories
 
         public virtual async Task<bool> DeleteAsync(Guid id)
         {
-            var entity = await dbSet.FindAsync(id);
+            try
+            {
+                var entity = await dbSet.FindAsync(id);
 
-            if (entity is null)
+                if (entity is null)
+                    return false;
+
+                return await Task.Run(() => Delete(entity));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method DeleteAsync has generated an error", typeof(GenericRepository<T>));
                 return false;
-            
-            return await Task.Run(() => Delete(entity));
+            }
         }
 
         public virtual bool Delete(T entity)
         {
-            dbSet.Remove(entity);
-            return true;
+            try
+            {
+                dbSet.Remove(entity);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method Delete has generated an error", typeof(GenericRepository<T>));
+                return false;
+            }
         }
 
         public virtual async Task<bool> DeleteAsync(T entity)
         {
-            return await Task.Run(() => Delete(entity));
+            try
+            { 
+                return await Task.Run(() => Delete(entity)); 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method DeleteAsync has generated an error", typeof(GenericRepository<T>));
+                return false;
+            }
         }
 
         public virtual async Task<T> GetByIdAsync(Guid id)
         {
-            return await dbSet.FindAsync(id) ?? null!;
+            try
+            {
+                return await dbSet.FindAsync(id) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method GetByIdAsync has generated an error", typeof(GenericRepository<T>));
+                return null!;
+            }
         }
 
         public virtual async Task<T> GetByUserIdAsync(Guid userId)
         {
-            return await dbSet.FindAsync(userId) ?? null!;
+            try
+            {
+                return await dbSet.FindAsync(userId) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method GetByUserIdAsync has generated an error", typeof(GenericRepository<T>));
+                return null!;
+            }
         }
 
         public virtual async Task<T> GetByIdentityIdAsync(Guid identityId)
         {
-            return await dbSet.FindAsync(identityId) ?? null!;
+            try
+            { 
+                return await dbSet.FindAsync(identityId) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method GetByIdentityIdAsync has generated an error", typeof(GenericRepository<T>));
+                return null!;
+            }
         }
 
         public virtual async Task<T> GetByEmailsync(string email)
@@ -78,41 +134,65 @@ namespace Clinic.DataService.Repositories
 
         public virtual async Task<IEnumerable<T>> GetAllAsync(string[] includes = null!, bool trackObject = false)
         {
-            IQueryable<T> query = dbSet;
+            try
+            {
+                IQueryable<T> query = dbSet;
 
-            if (includes is not null)
-                foreach (var include in includes)
-                    query = query.Include(include);
+                if (includes is not null)
+                    foreach (var include in includes)
+                        query = query.Include(include);
 
-            if (trackObject)
-                return await query.ToListAsync();
+                if (trackObject)
+                    return await query.ToListAsync();
 
-            return await query.AsNoTracking().ToListAsync();
+                return await query.AsNoTracking().ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method GetAllAsync has generated an error", typeof(GenericRepository<T>));
+                return new List<T>();
+            }
         }
 
         public virtual async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> criteria, string[] includes = null!, bool trackObject = false)
         {
-            IQueryable<T> query = dbSet;
+            try
+            {
+                IQueryable<T> query = dbSet;
 
-            if (includes is not null)
-                foreach (var include in includes)
-                    query = query.Include(include);
+                if (includes is not null)
+                    foreach (var include in includes)
+                        query = query.Include(include);
 
-            if (trackObject)
-                return await query.Where(criteria).ToListAsync();
+                if (trackObject)
+                    return await query.Where(criteria).ToListAsync();
 
-            return await query.AsNoTracking().Where(criteria).ToListAsync();
+                return await query.AsNoTracking().Where(criteria).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method GetAllAsync has generated an error", typeof(GenericRepository<T>));
+                return new List<T>();
+            }
         }
 
         public virtual async Task<T> FindAsync(Expression<Func<T, bool>> criteria, string[] includes = null!)
         {
-            IQueryable<T> query = dbSet;
+            try
+            {
+                IQueryable<T> query = dbSet;
 
-            if (includes is not null)
-                foreach (var include in includes)
-                    query = query.Include(include);
+                if (includes is not null)
+                    foreach (var include in includes)
+                        query = query.Include(include);
 
-            return await query.SingleOrDefaultAsync(criteria) ?? null!;
+                return await query.SingleOrDefaultAsync(criteria) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method FindAsync has generated an error", typeof(GenericRepository<T>));
+                return null!;
+            }
         }
     }
 }

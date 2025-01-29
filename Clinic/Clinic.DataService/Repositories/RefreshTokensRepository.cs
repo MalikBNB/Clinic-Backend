@@ -17,7 +17,7 @@ namespace Clinic.DataService.Repositories
         {
         }
 
-        public override async Task<IEnumerable<RefreshToken>> GetAllAsync(string[] includes = null, bool trackObject = false)
+        public override async Task<IEnumerable<RefreshToken>> GetAllAsync(string[] includes = null!, bool trackObject = false)
         {
             try
             {
@@ -36,12 +36,12 @@ namespace Clinic.DataService.Repositories
         {
             try
             {
-                return await dbSet.AsNoTracking().FirstOrDefaultAsync(rt => rt.Token.ToLower() == refreshToken.ToLower());
+                return await dbSet.AsNoTracking().FirstOrDefaultAsync(rt => rt.Token.ToLower() == refreshToken.ToLower()) ?? null!;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{Repo} Method GetByRefreshToken has generated an error", typeof(RefreshToken));
-                return null;
+                return null!;
             }
         }
 

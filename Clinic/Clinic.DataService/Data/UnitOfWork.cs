@@ -38,7 +38,7 @@ namespace Clinic.DataService.Data
             MedicalRecords = new MedicalRecordsRepository(_context, _logger);
             Prescriptions = new PrescriptionsRepository(_context, _logger);
             Payments = new PaymentRepository(_context, _logger);
-            Appointments = new AppointmentRepository(_context, _logger);
+            Appointments = new AppointmentsRepository(_context, _logger);
         }
 
 

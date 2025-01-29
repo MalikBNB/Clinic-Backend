@@ -18,24 +18,56 @@ namespace Clinic.DataService.Repositories
         {
         }
 
-        public override async Task<IEnumerable<Patient>> GetAllAsync(string[] includes = null, bool trackObject = false)
+        public override async Task<IEnumerable<Patient>> GetAllAsync(string[] includes = null!, bool trackObject = false)
         {
-            return await dbSet.Where(p => p.Status == 1).ToListAsync();
+            try
+            {
+                return await dbSet.Where(p => p.Status == 1).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Methode GetAllAsync has generated an error", typeof(PatientsRepository));
+                return new List<Patient>();
+            }
         }
 
         public override async Task<Patient> GetByIdAsync(Guid id)
         {
-            return await dbSet.FirstOrDefaultAsync(p => p.Id == id && p.Status == 1) ?? null!;
+            try
+            {
+                return await dbSet.FirstOrDefaultAsync(p => p.Id == id && p.Status == 1) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Methode GetByIdAsync has generated an error", typeof(PatientsRepository));
+                return null!;
+            }
         }
 
         public override async Task<Patient> GetByIdentityIdAsync(Guid identityId)
         {
-            return await dbSet.FirstOrDefaultAsync(d => d.IdentityId == identityId && d.Status == 1) ?? null!;
+            try
+            {
+                return await dbSet.FirstOrDefaultAsync(d => d.IdentityId == identityId && d.Status == 1) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Methode GetByIdentityIdAsync has generated an error", typeof(PatientsRepository));
+                return null!;
+            }
         }
 
         public override async Task<Patient> GetByEmailsync(string email)
         {
-            return await dbSet.SingleOrDefaultAsync(p => p.Email == email && p.Status == 1) ?? null!;
+            try
+            {
+                return await dbSet.SingleOrDefaultAsync(p => p.Email == email && p.Status == 1) ?? null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Methode GetByEmailsync has generated an error", typeof(PatientsRepository));
+                return null!;
+            }
         }
 
         public async Task<bool> UpdateAsync(Guid id, UpdateProfileDto dto)
@@ -56,20 +88,28 @@ namespace Clinic.DataService.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(UsersRepository));
+                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(PatientsRepository));
                 return false;
             }
         }
 
         public override async Task<bool> DeleteAsync(Guid id)
         {
-            var patient = await dbSet.FindAsync(id);
-            if (patient == null) return false;
+            try
+            {
+                var patient = await dbSet.FindAsync(id);
+                if (patient == null) return false;
 
-            patient.Status = 0;
-            patient.Modified = DateTime.Now;
+                patient.Status = 0;
+                patient.Modified = DateTime.Now;
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method DeleteAsync has generated an error", typeof(PatientsRepository));
+                return false;
+            }
         }
     }
 }

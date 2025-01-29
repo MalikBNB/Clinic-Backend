@@ -10,25 +10,33 @@ namespace Clinic.DataService.Repositories
     {
         public PrescriptionsRepository(AppDbContext context, ILogger logger) : base(context, logger)
         {
-            
+
         }
 
         public async Task<bool> UpdateAsync(PrescriptionsDto dto)
         {
-            var prescription = await dbSet.FindAsync(new Guid(dto.Id));
-            if (prescription == null) 
+            try
+            {
+                var prescription = await dbSet.FindAsync(new Guid(dto.Id));
+                if (prescription == null)
+                    return false;
+
+                prescription.Medication = dto.Medication;
+                prescription.Dosage = dto.Dosage;
+                prescription.Frequency = dto.Frequency;
+                prescription.Instructions = dto.Instructions;
+                prescription.StartDate = dto.StartDate;
+                prescription.EndDate = dto.EndDate;
+                prescription.ModifierId = dto.ModifierId;
+                prescription.Modified = dto.Modified;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(PrescriptionsRepository));
                 return false;
-
-            prescription.Medication = dto.Medication;
-            prescription.Dosage = dto.Dosage;
-            prescription.Frequency = dto.Frequency;
-            prescription.Instructions = dto.Instructions;
-            prescription.StartDate = dto.StartDate;
-            prescription.EndDate = dto.EndDate;
-            prescription.ModifierId = dto.ModifierId;
-            prescription.Modified = dto.Modified;
-
-            return true;
+            }
         }
     }
 }

@@ -21,11 +21,11 @@ namespace Clinic.DataService.Repositories
         }
 
 
-        public override async Task<IEnumerable<User>> GetAllAsync(string[] includes = null, bool trackObject = false)
+        public override async Task<IEnumerable<User>> GetAllAsync(string[] includes = null!, bool trackObject = false)
         {
             try
             {
-                if(trackObject)
+                if (trackObject)
                     return await dbSet.Where(u => u.Status == 1).ToListAsync();
 
                 return await dbSet.Where(u => u.Status == 1).AsNoTracking().ToListAsync();
@@ -39,7 +39,15 @@ namespace Clinic.DataService.Repositories
 
         public async Task<bool> IsUserExists(string email)
         {
-            return await dbSet.SingleOrDefaultAsync(u => u.Email == email) != null;
+            try
+            {
+                return await dbSet.SingleOrDefaultAsync(u => u.Email == email) != null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method IsUserExists has generated an error", typeof(UsersRepository));
+                return false;
+            }
         }
 
         public override async Task<User> GetByIdentityIdAsync(Guid identityId)
@@ -81,13 +89,21 @@ namespace Clinic.DataService.Repositories
 
         public override async Task<bool> DeleteAsync(Guid id)
         {
-            var user = await dbSet.FindAsync(id);
-            if (user is null) return false;
+            try
+            {
+                var user = await dbSet.FindAsync(id);
+                if (user is null) return false;
 
-            user.Status = 0;
-            user.Modified = DateTime.Now;
+                user.Status = 0;
+                user.Modified = DateTime.Now;
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method DeleteAsync has generated an error", typeof(UsersRepository));
+                return false;
+            }
         }
     }
 }
