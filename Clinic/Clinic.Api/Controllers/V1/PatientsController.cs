@@ -31,48 +31,17 @@ namespace Clinic.Api.Controllers.V1
         }
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> AddAsync([FromBody] PatientDto patientDto)
-        //{
-        //    var result = new Result<PatientDto>();
-
-        //    if (patientDto is null) return BadRequest(result.Error = PopulateError(400,
-        //                                                                            ErrorMessages.Generic.InvalidPayload,
-        //                                                                            ErrorMessages.Generic.BadRequest));
-
-        //    var loggedInUser = await GetLoggedInUserAsync();
-        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-        //                                                                     ErrorMessages.User.UserNotFound,
-        //                                                                     ErrorMessages.Generic.ObjectNotFound));
-
-        //    var patientExists = await _unitOfWork.Patients.GetByEmailsync(patientDto.Email) is not null;
-        //    if (patientExists) return BadRequest(result.Error = PopulateError(400,
-        //                                                                      ErrorMessages.User.DoctorAlreadyExist,
-        //                                                                      ErrorMessages.Generic.InvalidRequest));
-
-        //    var newPatient = _mapper.Map<Patient>(patientDto);
-        //    //newPatient.CreatorId = loggedInUser.Id;
-        //    //newPatient.ModifierId = loggedInUser.Id;
-        //    newPatient.Created = DateTime.Now;
-        //    newPatient.Modified = DateTime.Now;
-
-        //    await _unitOfWork.Patients.AddAsync(newPatient);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    result.Content = patientDto;
-
-        //    return CreatedAtRoute("Patient", new { newPatient.Id }, result);
-        //}
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(string id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             var result = new Result<ProfileDto>();
 
-            var patient = await _unitOfWork.Patients.FindAsync(p => p.Id == new Guid(id) && p.Status == 1);
-            if (patient is null) return BadRequest(result.Error = PopulateError(404,
-                                                                                ErrorMessages.User.UserNotFound,
-                                                                                ErrorMessages.Generic.ObjectNotFound));
+            var patient = await _unitOfWork.Patients.FindAsync(p => p.Id == id && p.Status == 1);
+            if (patient is null)
+            {
+                result.Error = PopulateError(404, ErrorMessages.User.UserNotFound, ErrorMessages.Generic.ObjectNotFound);
+                return BadRequest(result);
+            }
 
             var mappedProfile = _mapper.Map<ProfileDto>(patient);
 
@@ -99,21 +68,24 @@ namespace Clinic.Api.Controllers.V1
             return Ok(pagedResult);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            var result = new Result<User>();
+            var result = new Result<Patient>();
 
-            var patient = await _unitOfWork.Patients.FindAsync(p => p.Id == new Guid(id) && p.Status == 1);
-            if (patient is null) return BadRequest(result.Error = PopulateError(400,
-                                                                        ErrorMessages.User.UserNotFound,
-                                                                        ErrorMessages.Generic.ObjectNotFound));
+            var patient = await _unitOfWork.Patients.FindAsync(p => p.Id == id && p.Status == 1);
+            if (patient is null)
+            {
+                result.Error = PopulateError(400, ErrorMessages.User.UserNotFound, ErrorMessages.Generic.ObjectNotFound);
+                return BadRequest(result);
+            }
 
-            var isDeleted = await _unitOfWork.Patients.DeleteAsync(new Guid(id));
-            if (!isDeleted) 
-                return BadRequest(result.Error = PopulateError(400,
-                                                                        ErrorMessages.Generic.SomethingWentWrong,
-                                                                        ErrorMessages.Generic.InvalidRequest));
+            var isDeleted = await _unitOfWork.Patients.DeleteAsync(patient);
+            if (!isDeleted)
+            {
+                result.Error = PopulateError(500, ErrorMessages.Generic.SomethingWentWrong, ErrorMessages.Generic.InvalidRequest);
+                return BadRequest(result);
+            }
             
             await _unitOfWork.CompleteAsync();
 

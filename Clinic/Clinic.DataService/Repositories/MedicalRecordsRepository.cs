@@ -13,27 +13,6 @@ namespace Clinic.DataService.Repositories
         {
         }
 
-        public async Task<bool> UpdateAsync(MedicalRecordDto dto)
-        {
-            try
-            {
-                var oldRecord = await dbSet.FindAsync(dto.Id);
-                if (oldRecord is null)
-                    return false;
-
-                oldRecord.VisitDescription = dto.VisitDescription;
-                oldRecord.Diagnosis = dto.Diagnosis;
-                oldRecord.Notes = dto.Notes;
-                oldRecord.Modified = dto.Modified;
-                oldRecord.ModifierId = dto.ModifierId;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(MedicalRecordsRepository));
-                return false;
-            }
-        }
+        
     }
 }

@@ -26,23 +26,7 @@ public class MedicalRecordProfile : Profile
             )
             .ForMember(
                 dest => dest.AppointmentId,
-                from => from.MapFrom(dto => new Guid(dto.AppointmentId))
-            )
-            .ForMember(
-                dest => dest.CreatorId,
-                from => from.MapFrom(dto => dto.CreatorId)
-            )
-            .ForMember(
-                dest => dest.ModifierId,
-                from => from.MapFrom(dto => dto.ModifierId)
-            )
-            .ForMember(
-                dest => dest.Created,
-                from => from.MapFrom(dto => dto.Created)
-            )
-            .ForMember(
-                dest => dest.Modified,
-                from => from.MapFrom(dto => dto.Modified)
+                from => from.MapFrom(dto => dto.AppointmentId)
             );
 
         #endregion MedicalRecordDto ==> MedicalRecord

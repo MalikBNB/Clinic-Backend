@@ -20,29 +20,13 @@ namespace Clinic.Api.Profiles
                     dest => dest.status,
                     from => from.MapFrom(dto => dto.status)
                 )
-                //.ForMember(
-                //    dest => dest.PatientId,
-                //    from => from.MapFrom(dto => dto.PatientId)
-                //)
-                //.ForMember(
-                //    dest => dest.DoctorId,
-                //    from => from.MapFrom(dto => dto.DoctorId)
-                //)
-                //.ForMember(
-                //    dest => dest.CreatorId,
-                //    from => from.MapFrom(a => new Guid(a.CreatorId).ToString())
-                //)
                 .ForMember(
-                    dest => dest.Created,
-                    from => from.MapFrom(a => a.Created)
+                    dest => dest.PatientId,
+                    from => from.MapFrom(dto => dto.PatientId)
                 )
-                //.ForMember(
-                //    dest => dest.ModifierId,
-                //    from => from.MapFrom(a => new Guid(a.ModifierId).ToString())
-                //)
                 .ForMember(
-                    dest => dest.Modified,
-                    from => from.MapFrom(a => a.Modified)
+                    dest => dest.DoctorId,
+                    from => from.MapFrom(dto => dto.DoctorId)
                 );
 
             #endregion AppointmentDto ==> Appointment

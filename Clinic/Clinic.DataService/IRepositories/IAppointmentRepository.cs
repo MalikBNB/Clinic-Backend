@@ -13,6 +13,6 @@ namespace Clinic.DataService.IRepositories
     {
         //Task<Appointment> FindAsync(Guid id, string[] includes = null);
         //Task<Appointment> FindAsync(Expression<Func<Appointment, bool>> criteria, string[] includes = null);
-        Task<bool> UpdateAsync(AppointmentDto dto);
+        //Task<bool> UpdateAsync(Guid id, AppointmentDto dto);
     }
 }

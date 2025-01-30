@@ -41,12 +41,12 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(pagedResult);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(string id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetUser(Guid id)
         {
             var result = new Result<ProfileDto>();
 
-            var user = await _unitOfWork.Users.FindAsync(u => u.Id == new Guid(id) && u.Status == 1);
+            var user = await _unitOfWork.Users.FindAsync(u => u.Id == id && u.Status == 1);
 
             if (user is null)
             {
@@ -64,32 +64,12 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> AddAsync([FromBody] UserDto userDto)
-        //{
-        //    var result = new Result<UserDto>();
-
-        //    var loggedInUser = await GetLoggedInUserAsync();
-        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-        //                                                                             ErrorMessages.User.UserNotFound,
-        //                                                                             ErrorMessages.Generic.ObjectNotFound));
-
-        //    var mappedUser = _mapper.Map<User>(userDto);
-
-        //    await _unitOfWork.Users.AddAsync(mappedUser);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    result.Content = userDto;
-
-        //    return CreatedAtRoute("User", new {id = mappedUser.Id }, result);
-        //}
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             var result = new Result<User>();
 
-            var isDeleted = await _unitOfWork.Users.DeleteAsync(new Guid(id));
+            var isDeleted = await _unitOfWork.Users.DeleteAsync(id);
             if (!isDeleted) 
                 return BadRequest(result.Error = PopulateError(400,
                                                                ErrorMessages.Generic.SomethingWentWrong,

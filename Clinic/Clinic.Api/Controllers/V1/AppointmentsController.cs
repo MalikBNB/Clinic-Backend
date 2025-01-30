@@ -33,34 +33,34 @@ namespace Clinic.Api.Controllers.V1
         {
             var result = new Result<AppointmentDto>();
 
-            if (appointmentDto is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.Generic.InvalidPayload,
-                                                                             ErrorMessages.Generic.BadRequest));
+            if (!ModelState.IsValid) 
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.InvalidPayload,
+                                                               ErrorMessages.Generic.BadRequest));
 
             var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+            if (loggedInUser is null) 
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.User.UserNotFound,
+                                                               ErrorMessages.Generic.ObjectNotFound));            
 
-            appointmentDto.status = AppointmentStatus.Pending;
-            appointmentDto.CreatorId = loggedInUser.Id;
-            appointmentDto.ModifierId = loggedInUser.Id;
-            appointmentDto.Created = DateTime.Now;
-            appointmentDto.Modified = DateTime.Now;
+            var appointment = _mapper.Map<Appointment>(appointmentDto);
+            appointment.CreatorId = loggedInUser.Id;
+            appointment.ModifierId = loggedInUser.Id;
+            appointment.Created = DateTime.Now;
+            appointment.Modified = DateTime.Now;
 
-            //var appointment = _mapper.Map<Appointment>(appointmentDto);
-
-            var appointment = new Appointment
-            {
-                Date = appointmentDto.Date,
-                PatientId = Guid.Parse(appointmentDto.PatientId),
-                DoctorId = Guid.Parse(appointmentDto.DoctorId),
-                status = AppointmentStatus.Confirmed,
-                CreatorId = loggedInUser.Id,
-                ModifierId = loggedInUser.Id,
-                Created = DateTime.Now,
-                Modified = DateTime.Now,
-            };
+            //var appointment = new Appointment
+            //{
+            //    Date = appointmentDto.Date,
+            //    PatientId = Guid.Parse(appointmentDto.PatientId),
+            //    DoctorId = Guid.Parse(appointmentDto.DoctorId),
+            //    status = AppointmentStatus.Confirmed,
+            //    CreatorId = loggedInUser.Id,
+            //    ModifierId = loggedInUser.Id,
+            //    Created = DateTime.Now,
+            //    Modified = DateTime.Now,
+            //};
 
             var isAdded = await _unitOfWork.Appointments.AddAsync(appointment);
             if (!isAdded)
@@ -74,19 +74,19 @@ namespace Clinic.Api.Controllers.V1
             return CreatedAtRoute("Appointment", new { appointment.Id }, result);
         }
 
-        [HttpGet("{id}/{isForPatient}")]
+        [HttpGet("{id:guid}/{isForPatient:bool}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllAsync(string id, bool isForPatient) // Get all appointments by patientId or doctorId
+        public async Task<IActionResult> GetAllAsync(Guid id, bool isForPatient) // Get all appointments by patientId or doctorId
         {
             var result = new PagedResult<AppointmentResponseDto>();
             result.Content = new List<AppointmentResponseDto>();
             var appointments = new List<Appointment>();
 
             if (isForPatient)
-                appointments = await _unitOfWork.Appointments.GetAllAsync(a => a.PatientId == new Guid(id) && a.status == AppointmentStatus.Confirmed,
+                appointments = await _unitOfWork.Appointments.GetAllAsync(a => a.PatientId == id && a.status == AppointmentStatus.Confirmed,
                                                                          ["Patient", "Doctor"]);
             else
-                appointments = await _unitOfWork.Appointments.GetAllAsync(a => a.DoctorId == new Guid(id) && a.status == AppointmentStatus.Confirmed,
+                appointments = await _unitOfWork.Appointments.GetAllAsync(a => a.DoctorId == id && a.status == AppointmentStatus.Confirmed,
                                                                          ["Patient", "Doctor"]);
 
             result.ResultCount = appointments.Count;
@@ -97,13 +97,13 @@ namespace Clinic.Api.Controllers.V1
 
         }
 
-        [HttpGet("Appointment/{id}", Name = "Appointment")]
+        [HttpGet("Appointment/{id:guid}", Name = "Appointment")]
         [AllowAnonymous]
-        public async Task<IActionResult> FindAsync(string id)
+        public async Task<IActionResult> FindAsync(Guid id)
         {
             var result = new Result<AppointmentResponseDto>();
 
-            var appointment = await _unitOfWork.Appointments.FindAsync(o => o.Id == new Guid(id), ["Patient", "Doctor"]);
+            var appointment = await _unitOfWork.Appointments.FindAsync(o => o.Id == id, ["Patient", "Doctor"]);
 
             result.Content = _mapper.Map<AppointmentResponseDto>(appointment);
 
@@ -111,23 +111,30 @@ namespace Clinic.Api.Controllers.V1
 
         }
 
-        [HttpPut("{id}/Confirmation")]
-        public async Task<IActionResult> ConfirmAsync(string id)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] AppointmentDto appointmentDto)
         {
             var result = new Result<AppointmentDto>();
 
-            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id) && a.status == AppointmentStatus.Pending);
+            if (!ModelState.IsValid)
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.InvalidPayload,
+                                                               ErrorMessages.Generic.BadRequest));
+
+            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == id);
             if (appointment is null)
                 return BadRequest(result.Error = PopulateError(400,
                                                                ErrorMessages.Generic.ObjectNotFound,
                                                                ErrorMessages.Generic.BadRequest));
 
             var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+            if (loggedInUser is null) 
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.User.UserNotFound,
+                                                               ErrorMessages.Generic.ObjectNotFound));
 
-            appointment.status = AppointmentStatus.Confirmed;
+            appointment.Date = appointmentDto.Date;
+            appointment.status = appointmentDto.status;
             appointment.ModifierId = loggedInUser.Id;
             appointment.Modified = DateTime.Now;
 
@@ -136,148 +143,148 @@ namespace Clinic.Api.Controllers.V1
             return Ok();
         }
 
-        [HttpPut("{id}/Reschedule")]
-        public async Task<IActionResult> RescheduleAsync([FromBody] AppointmentDto appointmentDto)
-        {
-            var result = new Result<AppointmentDto>();
+        //[HttpPut("{id:guid}/Reschedule")]
+        //public async Task<IActionResult> RescheduleAsync([FromBody] AppointmentDto appointmentDto)
+        //{
+        //    var result = new Result<AppointmentDto>();
 
-            if (appointmentDto is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.Generic.InvalidPayload,
-                                                                             ErrorMessages.Generic.BadRequest));
+        //    if (appointmentDto is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                     ErrorMessages.Generic.InvalidPayload,
+        //                                                                     ErrorMessages.Generic.BadRequest));
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+        //    var loggedInUser = await GetLoggedInUserAsync();
+        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                     ErrorMessages.User.UserNotFound,
+        //                                                                     ErrorMessages.Generic.ObjectNotFound));
 
-            appointmentDto.ModifierId = loggedInUser.Id;
-            appointmentDto.Modified = DateTime.Now;
+        //    appointmentDto.ModifierId = loggedInUser.Id;
+        //    appointmentDto.Modified = DateTime.Now;
 
-            var isUpdated = await _unitOfWork.Appointments.UpdateAsync(appointmentDto);
-            if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
-                                                                          ErrorMessages.Generic.SomethingWentWrong,
-                                                                          ErrorMessages.Generic.UnableToProcess));
+        //    var isUpdated = await _unitOfWork.Appointments.UpdateAsync(appointmentDto);
+        //    if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
+        //                                                                  ErrorMessages.Generic.SomethingWentWrong,
+        //                                                                  ErrorMessages.Generic.UnableToProcess));
 
-            await _unitOfWork.CompleteAsync();
+        //    await _unitOfWork.CompleteAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        [HttpPut("{id}/Cancel")]
-        public async Task<IActionResult> CancelAsync(string id)
-        {
-            var result = new Result<AppointmentDto>();
+        //[HttpPut("{id:guid}/Cancel")]
+        //public async Task<IActionResult> CancelAsync(Guid id)
+        //{
+        //    var result = new Result<AppointmentDto>();
 
-            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id));
-            if (appointment is null) 
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.ObjectNotFound,
-                                                               ErrorMessages.Generic.BadRequest));
+        //    var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == id);
+        //    if (appointment is null) 
+        //        return BadRequest(result.Error = PopulateError(400,
+        //                                                       ErrorMessages.Generic.ObjectNotFound,
+        //                                                       ErrorMessages.Generic.BadRequest));
             
-            if (appointment.status == AppointmentStatus.Canceled) 
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.BadRequest,
-                                                               ErrorMessages.Appointment.AlreadyCanceled));
+        //    if (appointment.status == AppointmentStatus.Canceled) 
+        //        return BadRequest(result.Error = PopulateError(400,
+        //                                                       ErrorMessages.Generic.BadRequest,
+        //                                                       ErrorMessages.Appointment.AlreadyCanceled));
             
-            if (appointment.status == AppointmentStatus.Completed) 
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.BadRequest,
-                                                               ErrorMessages.Appointment.CannotCancel));
+        //    if (appointment.status == AppointmentStatus.Completed) 
+        //        return BadRequest(result.Error = PopulateError(400,
+        //                                                       ErrorMessages.Generic.BadRequest,
+        //                                                       ErrorMessages.Appointment.CannotCancel));
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+        //    var loggedInUser = await GetLoggedInUserAsync();
+        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                     ErrorMessages.User.UserNotFound,
+        //                                                                     ErrorMessages.Generic.ObjectNotFound));
 
-            appointment.status = AppointmentStatus.Canceled;
-            appointment.ModifierId = loggedInUser.Id;
-            appointment.Modified = DateTime.Now;
+        //    appointment.status = AppointmentStatus.Canceled;
+        //    appointment.ModifierId = loggedInUser.Id;
+        //    appointment.Modified = DateTime.Now;
 
-            await _unitOfWork.CompleteAsync();
+        //    await _unitOfWork.CompleteAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        [HttpPut("NoShow")]
-        public async Task<IActionResult> SetToNoShowAsync([FromBody] List<string> ids)
-        {
-            var result = new Result<AppointmentDto>();
+        //[HttpPut("NoShow")]
+        //public async Task<IActionResult> SetToNoShowAsync([FromBody] List<string> ids)
+        //{
+        //    var result = new Result<AppointmentDto>();
 
-            var appointments = await _unitOfWork.Appointments.GetAllAsync(a => ((IEnumerable<Guid>)ids).Contains(a.Id), null, true);
-            if (appointments.Count == 0)
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.ObjectNotFound,
-                                                               ErrorMessages.Generic.BadRequest));
+        //    var appointments = await _unitOfWork.Appointments.GetAllAsync(a => ((IEnumerable<Guid>)ids).Contains(a.Id), null, true);
+        //    if (appointments.Count == 0)
+        //        return BadRequest(result.Error = PopulateError(400,
+        //                                                       ErrorMessages.Generic.ObjectNotFound,
+        //                                                       ErrorMessages.Generic.BadRequest));
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+        //    var loggedInUser = await GetLoggedInUserAsync();
+        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                     ErrorMessages.User.UserNotFound,
+        //                                                                     ErrorMessages.Generic.ObjectNotFound));
 
-            foreach (var item in appointments)
-            {
-                if (item.Date > DateTime.Now && item.status == AppointmentStatus.Confirmed)
-                {
-                    item.status = AppointmentStatus.NoShow;
-                    item.ModifierId = loggedInUser.Id;
-                    item.Modified = DateTime.Now;
-                }
-            }
+        //    foreach (var item in appointments)
+        //    {
+        //        if (item.Date > DateTime.Now && item.status == AppointmentStatus.Confirmed)
+        //        {
+        //            item.status = AppointmentStatus.NoShow;
+        //            item.ModifierId = loggedInUser.Id;
+        //            item.Modified = DateTime.Now;
+        //        }
+        //    }
 
-            await _unitOfWork.CompleteAsync();
+        //    await _unitOfWork.CompleteAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        [HttpPut("{id}/NoShow")]
-        public async Task<IActionResult> SetToNoShowAsync(string id)
-        {
-            var result = new Result<AppointmentDto>();
+        //[HttpPut("{id:guid}/NoShow")]
+        //public async Task<IActionResult> SetToNoShowAsync(Guid id)
+        //{
+        //    var result = new Result<AppointmentDto>();
 
-            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id) && a.Date > DateTime.Now && a.status == AppointmentStatus.Confirmed);
-            if (appointment is null)
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.ObjectNotFound,
-                                                               ErrorMessages.Generic.BadRequest));
+        //    var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == id && a.Date > DateTime.Now && a.status == AppointmentStatus.Confirmed);
+        //    if (appointment is null)
+        //        return BadRequest(result.Error = PopulateError(400,
+        //                                                       ErrorMessages.Generic.ObjectNotFound,
+        //                                                       ErrorMessages.Generic.BadRequest));
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+        //    var loggedInUser = await GetLoggedInUserAsync();
+        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                     ErrorMessages.User.UserNotFound,
+        //                                                                     ErrorMessages.Generic.ObjectNotFound));
 
-            appointment.status = AppointmentStatus.NoShow;
-            appointment.ModifierId = loggedInUser.Id;
-            appointment.Modified = DateTime.Now;
+        //    appointment.status = AppointmentStatus.NoShow;
+        //    appointment.ModifierId = loggedInUser.Id;
+        //    appointment.Modified = DateTime.Now;
 
-            await _unitOfWork.CompleteAsync();
+        //    await _unitOfWork.CompleteAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        [HttpPut("{id}/Complete")]
-        public async Task<IActionResult> CompleteAsync(string id)
-        {
-            var result = new Result<AppointmentDto>();
+        //[HttpPut("{id:guid}/Complete")]
+        //public async Task<IActionResult> CompleteAsync(Guid id)
+        //{
+        //    var result = new Result<AppointmentDto>();
 
-            var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == new Guid(id) && a.status == AppointmentStatus.Confirmed);
-            if (appointment is null)
-                return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Generic.ObjectNotFound,
-                                                               ErrorMessages.Generic.BadRequest));
+        //    var appointment = await _unitOfWork.Appointments.FindAsync(a => a.Id == id && a.status == AppointmentStatus.Confirmed);
+        //    if (appointment is null)
+        //        return BadRequest(result.Error = PopulateError(400,
+        //                                                       ErrorMessages.Generic.ObjectNotFound,
+        //                                                       ErrorMessages.Generic.BadRequest));
 
-            var loggedInUser = await GetLoggedInUserAsync();
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                             ErrorMessages.User.UserNotFound,
-                                                                             ErrorMessages.Generic.ObjectNotFound));
+        //    var loggedInUser = await GetLoggedInUserAsync();
+        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
+        //                                                                     ErrorMessages.User.UserNotFound,
+        //                                                                     ErrorMessages.Generic.ObjectNotFound));
 
-            appointment.status = AppointmentStatus.Completed;
-            appointment.ModifierId = loggedInUser.Id;
-            appointment.Modified = DateTime.Now;
+        //    appointment.status = AppointmentStatus.Completed;
+        //    appointment.ModifierId = loggedInUser.Id;
+        //    appointment.Modified = DateTime.Now;
 
-            await _unitOfWork.CompleteAsync();
+        //    await _unitOfWork.CompleteAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
     }
 
 

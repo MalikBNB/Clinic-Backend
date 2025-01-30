@@ -8,7 +8,7 @@ public class PrescriptionsProfile : Profile
 {
     public PrescriptionsProfile()
     {
-        #region Prescriptions ==> PrescriptionsDto
+        #region Prescription ==> PrescriptionsDto
 
         CreateMap<Prescription, PrescriptionsDto>()
             .ForMember(
@@ -38,22 +38,6 @@ public class PrescriptionsProfile : Profile
             .ForMember(
                 dest => dest.MedicalRecordId,
                 from => from.MapFrom(p => p.MedicalRecordId)
-            )
-            .ForMember(
-                dest => dest.CreatorId,
-                from => from.MapFrom(p => p.CreatorId)
-            )
-            .ForMember(
-                dest => dest.ModifierId,
-                from => from.MapFrom(p => p.ModifierId)
-            )
-            .ForMember(
-                dest => dest.Created,
-                from => from.MapFrom(p => p.Created)
-            )
-            .ForMember(
-                dest => dest.Modified,
-                from => from.MapFrom(p => p.Modified)
             );
 
         #endregion Prescriptions ==> PrescriptionsDto
@@ -85,25 +69,9 @@ public class PrescriptionsProfile : Profile
                 dest => dest.Instructions,
                 from => from.MapFrom(p => p.Instructions)
             )
-            //.ForMember(
-            //    dest => dest.MedicalRecordId,
-            //    from => from.MapFrom(p => p.MedicalRecordId)
-            //)
-            //.ForMember(
-            //    dest => dest.CreatorId,
-            //    from => from.MapFrom(p => p.CreatorId)
-            //)
-            //.ForMember(
-            //    dest => dest.ModifierId,
-            //    from => from.MapFrom(p => p.ModifierId)
-            //)
             .ForMember(
-                dest => dest.Created,
-                from => from.MapFrom(p => p.Created)
-            )
-            .ForMember(
-                dest => dest.Modified,
-                from => from.MapFrom(p => p.Modified)
+                dest => dest.MedicalRecordId,
+                from => from.MapFrom(p => p.MedicalRecordId)
             );
 
         #endregion Prescriptions ==> PrescriptionsDto

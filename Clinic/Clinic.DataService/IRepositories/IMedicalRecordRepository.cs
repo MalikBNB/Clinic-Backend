@@ -10,7 +10,6 @@ namespace Clinic.DataService.IRepositories
 {
     public interface IMedicalRecordRepository : IGenericRepository<MedicalRecord>
     {
-        Task<bool> UpdateAsync(MedicalRecordDto dto);
 
     }
 }

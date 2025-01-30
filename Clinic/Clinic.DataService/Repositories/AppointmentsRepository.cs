@@ -41,28 +41,28 @@ namespace Clinic.DataService.Repositories
             }
         }
 
-        public async Task<bool> UpdateAsync(AppointmentDto dto)
-        {
-            try
-            {
-                var oldAppointment = await dbSet.SingleOrDefaultAsync(a => a.Id == new Guid(dto.Id)
-                                                                 && (a.status != AppointmentStatus.Canceled || a.status != AppointmentStatus.Completed));
+        //public async Task<bool> UpdateAsync(Guid id, AppointmentDto dto)
+        //{
+        //    try
+        //    {
+        //        var oldAppointment = await dbSet.SingleOrDefaultAsync(a => a.Id == id
+        //                                                         && (a.status != AppointmentStatus.Canceled || a.status != AppointmentStatus.Completed));
 
-                if (oldAppointment is null)
-                    return false;
+        //        if (oldAppointment is null)
+        //            return false;
 
-                oldAppointment.Date = dto.Date;
-                oldAppointment.status = AppointmentStatus.Rescheduled;
-                oldAppointment.ModifierId = dto.ModifierId;
-                oldAppointment.Modified = dto.Modified;
+        //        oldAppointment.Date = dto.Date;
+        //        oldAppointment.status = AppointmentStatus.Rescheduled;
+        //        oldAppointment.ModifierId = dto.ModifierId;
+        //        oldAppointment.Modified = dto.Modified;
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(AppointmentsRepository));
-                return false;
-            }
-        }
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(AppointmentsRepository));
+        //        return false;
+        //    }
+        //}
     }
 }

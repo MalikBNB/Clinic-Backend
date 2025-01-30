@@ -40,7 +40,16 @@ namespace Clinic.DataService.Repositories
 
         public virtual async Task<bool> UpdateAsync(T entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await Task.Run(() => { dbSet.Update(entity); });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(GenericRepository<T>));
+                return false;
+            }
         }
 
         public virtual async Task<bool> DeleteAsync(Guid id)
@@ -192,6 +201,20 @@ namespace Clinic.DataService.Repositories
             {
                 _logger.LogError(ex, "{Repo} Method FindAsync has generated an error", typeof(GenericRepository<T>));
                 return null!;
+            }
+        }
+
+        public virtual bool Update(T entity)
+        {
+            try
+            {
+                dbSet.Update(entity);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} Method Update has generated an error", typeof(GenericRepository<T>));
+                return false;
             }
         }
     }

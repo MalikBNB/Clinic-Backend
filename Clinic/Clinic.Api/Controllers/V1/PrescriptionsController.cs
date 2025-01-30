@@ -24,17 +24,18 @@ public class PrescriptionsController : BaseController
     }
 
 
-    [HttpGet("{medicalRecordId}")]
+    [HttpGet("{medicalRecordId:guid}/All")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAllAsync(string medicalRecordId)
+    public async Task<IActionResult> GetAllAsync(Guid medicalRecordId)
     {
         var result = new PagedResult<PrescriptionsDto>();
 
-        var prescriptions = await _unitOfWork.Prescriptions.GetAllAsync(p => p.MedicalRecordId == new Guid(medicalRecordId));
-        if (prescriptions.Count() == 0)
-            return BadRequest(result.Error = PopulateError(404,
-                                                           ErrorMessages.Generic.ObjectNotFound,
-                                                           ErrorMessages.Generic.ObjectNotFound));
+        var prescriptions = await _unitOfWork.Prescriptions.GetAllAsync(p => p.MedicalRecordId == medicalRecordId);
+        if (!prescriptions.Any())
+        {
+            result.Error = PopulateError(404, ErrorMessages.Generic.ObjectNotFound, ErrorMessages.Generic.ObjectNotFound);
+            return BadRequest(result);
+        }
 
         foreach (var prescription in prescriptions)
             result.Content.Add(_mapper.Map<PrescriptionsDto>(prescription));
@@ -51,10 +52,11 @@ public class PrescriptionsController : BaseController
         var result = new PagedResult<PrescriptionsDto>();
 
         var prescriptions = await _unitOfWork.Prescriptions.GetAllAsync();
-        if (prescriptions.Count() == 0)
-            return BadRequest(result.Error = PopulateError(404,
-                                                           ErrorMessages.Generic.ObjectNotFound,
-                                                           ErrorMessages.Generic.ObjectNotFound));
+        if (prescriptions.Any())
+        {
+            result.Error = PopulateError(404, ErrorMessages.Generic.ObjectNotFound, ErrorMessages.Generic.ObjectNotFound);
+            return BadRequest(result);
+        }
 
         foreach (var prescription in prescriptions)
             result.Content.Add(_mapper.Map<PrescriptionsDto>(prescription));
@@ -64,17 +66,18 @@ public class PrescriptionsController : BaseController
         return Ok(result);
     }
 
-    [HttpGet("{id}", Name = "Prescription")]
+    [HttpGet("{id:guid}", Name = "Prescription")]
     [AllowAnonymous]
-    public async Task<IActionResult> FindAsync(string id)
+    public async Task<IActionResult> FindAsync(Guid id)
     {
         var result = new Result<PrescriptionsDto>();
 
-        var prescription = await _unitOfWork.Prescriptions.FindAsync(p => p.Id == new Guid(id), ["MedicalRecord"]);
+        var prescription = await _unitOfWork.Prescriptions.FindAsync(p => p.Id == id, ["MedicalRecord"]);
         if (prescription is null)
-            return BadRequest(result.Error = PopulateError(404,
-                                                           ErrorMessages.Generic.ObjectNotFound,
-                                                           ErrorMessages.Generic.ObjectNotFound));
+        {
+            result.Error = PopulateError(404, ErrorMessages.Generic.ObjectNotFound, ErrorMessages.Generic.ObjectNotFound);
+            return BadRequest(result);
+        }
 
         result.Content = _mapper.Map<PrescriptionsDto>(prescription);
 
@@ -86,10 +89,11 @@ public class PrescriptionsController : BaseController
     {
         var result = new Result<PrescriptionsDto>();
 
-        if (prescriptionsDto is null)
-            return BadRequest(result.Error = PopulateError(400,
-                                                           ErrorMessages.Generic.InvalidPayload,
-                                                           ErrorMessages.Generic.BadRequest));
+        if (!ModelState.IsValid)
+        {
+            result.Error = PopulateError(400, ErrorMessages.Generic.InvalidPayload, ErrorMessages.Generic.BadRequest);
+            return BadRequest(result);
+        }
 
         var loggedInUser = await GetLoggedInUserAsync();
         if (loggedInUser is null)
@@ -97,33 +101,19 @@ public class PrescriptionsController : BaseController
                                                            ErrorMessages.User.UserNotFound,
                                                            ErrorMessages.Generic.ObjectNotFound));
 
-        //prescriptionsDto.CreatorId = loggedInUser.Id;
-        //prescriptionsDto.ModifierId = loggedInUser.Id;
-        //prescriptionsDto.Created = DateTime.Now;
-        //prescriptionsDto.Modified = DateTime.Now;
+        var newPrescription = _mapper.Map<Prescription>(prescriptionsDto);
 
-        //var newPrescription = _mapper.Map<Prescription>(prescriptionsDto);
-
-        var newPrescription = new Prescription
-        {
-            MedicalRecordId = new Guid(prescriptionsDto.MedicalRecordId),
-            Medication = prescriptionsDto.Medication,
-            Dosage = prescriptionsDto.Dosage,
-            Frequency = prescriptionsDto.Frequency,
-            Instructions = prescriptionsDto.Instructions,
-            StartDate = prescriptionsDto.StartDate,
-            EndDate = prescriptionsDto.EndDate,
-            CreatorId = loggedInUser.Id,
-            ModifierId = loggedInUser.Id,
-            Created = DateTime.Now,
-            Modified = DateTime.Now,
-        };
+        newPrescription.CreatorId = loggedInUser.Id;
+        newPrescription.ModifierId = loggedInUser.Id;
+        newPrescription.Created = DateTime.Now;
+        newPrescription.Modified = DateTime.Now;
 
         var isAdded = await _unitOfWork.Prescriptions.AddAsync(newPrescription);
-        if(!isAdded)
-            return BadRequest(result.Error = PopulateError(500,
-                                                           ErrorMessages.Generic.SomethingWentWrong,
-                                                           ErrorMessages.Generic.UnableToProcess));
+        if (!isAdded)
+        {
+            result.Error = PopulateError(500, ErrorMessages.Generic.SomethingWentWrong, ErrorMessages.Generic.UnableToProcess);
+            return BadRequest(result);
+        }
 
         result.Content = prescriptionsDto;
 
@@ -132,47 +122,64 @@ public class PrescriptionsController : BaseController
         return CreatedAtRoute(routeName: "Prescription", new { newPrescription.Id }, result);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     [AllowAnonymous]
-    public async Task<IActionResult> DeleteAsync(string id)
+    public async Task<IActionResult> DeleteAsync(Guid id)
     {
         var result = new Result<Prescription>();
 
-        var isDeleted = await _unitOfWork.Prescriptions.DeleteAsync(new Guid(id));
+        var prescription = await _unitOfWork.Prescriptions.FindAsync(p => p.Id == id);
+        if (prescription is null)
+        {
+            result.Error = PopulateError(404, ErrorMessages.Generic.ObjectNotFound, ErrorMessages.Generic.ObjectNotFound);
+            return BadRequest(result);
+        }
+
+        var isDeleted = await _unitOfWork.Prescriptions.DeleteAsync(prescription);
         if (!isDeleted)
-            return BadRequest(result.Error = PopulateError(500,
-                                                           ErrorMessages.Generic.SomethingWentWrong,
-                                                           ErrorMessages.Generic.UnableToProcess));
+        {
+            result.Error = PopulateError(500, ErrorMessages.Generic.SomethingWentWrong, ErrorMessages.Generic.UnableToProcess);
+            return BadRequest(result);
+        }
+
         await _unitOfWork.CompleteAsync();
 
         return Ok();
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAsync(string id, [FromBody] PrescriptionsDto prescriptionsDto)
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] PrescriptionsDto prescriptionsDto)
     {
         var result = new Result<PrescriptionsDto>();
 
-        if (prescriptionsDto is null)
-            return BadRequest(result.Error = PopulateError(400,
-                                                           ErrorMessages.Generic.InvalidPayload,
-                                                           ErrorMessages.Generic.BadRequest));
+        if (!ModelState.IsValid)
+        {
+            result.Error = PopulateError(400, ErrorMessages.Generic.InvalidPayload, ErrorMessages.Generic.BadRequest);
+            return BadRequest(result);
+        }
 
         var loggedInUser = await GetLoggedInUserAsync();
         if (loggedInUser is null)
-            return BadRequest(result.Error = PopulateError(400,
-                                                           ErrorMessages.User.UserNotFound,
-                                                           ErrorMessages.Generic.ObjectNotFound));
+        {
+            result.Error = PopulateError(400, ErrorMessages.User.UserNotFound, ErrorMessages.Generic.ObjectNotFound);
+            return BadRequest(result);
+        }
 
-        prescriptionsDto.Id = id;
-        prescriptionsDto.ModifierId = loggedInUser.Id;
-        prescriptionsDto.Modified = DateTime.Now;
+        var prescription = await _unitOfWork.Prescriptions.FindAsync(p => p.Id == id);
+        if (prescription is null)
+        {
+            result.Error = PopulateError(404, ErrorMessages.Generic.ObjectNotFound, ErrorMessages.Generic.ObjectNotFound);
+            return BadRequest(result);
+        }
 
-        var isUpdated = await _unitOfWork.Prescriptions.UpdateAsync(prescriptionsDto);
-        if (!isUpdated)
-            return BadRequest(result.Error = PopulateError(500,
-                                                           ErrorMessages.Generic.SomethingWentWrong,
-                                                           ErrorMessages.Generic.UnableToProcess));
+        prescription.Medication = prescriptionsDto.Medication;
+        prescription.Dosage = prescriptionsDto.Dosage;
+        prescription.Frequency = prescriptionsDto.Frequency;
+        prescription.Instructions = prescriptionsDto.Instructions;
+        prescription.StartDate = prescriptionsDto.StartDate;
+        prescription.EndDate = prescriptionsDto.EndDate;
+        prescription.ModifierId = loggedInUser.Id;
+        prescription.Modified = DateTime.Now;
 
         await _unitOfWork.CompleteAsync();
 

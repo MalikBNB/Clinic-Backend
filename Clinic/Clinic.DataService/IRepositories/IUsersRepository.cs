@@ -11,7 +11,7 @@ namespace Clinic.DataService.IRepositories
     public interface IUsersRepository : IGenericRepository<User>
     {
         Task<bool> IsUserExists(string email);
-        Task<bool> UpdateAsync(Guid id, UpdateProfileDto dto);
+        //Task<bool> UpdateAsync(Guid id, UpdateProfileDto dto);
 
     }
 }

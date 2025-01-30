@@ -24,39 +24,6 @@ namespace Clinic.Api.Controllers.V1
         {           
         }
 
-        //[HttpPost("Doctor")]
-        //public async Task<IActionResult> AddAsync([FromBody] DoctorDto doctorDto)
-        //{
-        //    var result = new Result<DoctorDto>();
-
-        //    if (doctorDto is null) return BadRequest(result.Error = PopulateError(400,
-        //                                                       ErrorMessages.Generic.InvalidPayload,
-        //                                                       ErrorMessages.Generic.BadRequest));
-
-        //    var loggedInUser = await GetLoggedInUserAsync();
-        //    if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-        //                                                                     ErrorMessages.User.UserNotFound,
-        //                                                                     ErrorMessages.Generic.ObjectNotFound));
-
-        //    var doctorExists = await _unitOfWork.Doctors.GetByEmailsync(doctorDto.Email) is not null;
-        //    if (doctorExists) return BadRequest(result.Error = PopulateError(400,
-        //                                                                     ErrorMessages.User.DoctorAlreadyExist,
-        //                                                                     ErrorMessages.Generic.InvalidRequest));
-
-        //    var newDoctor = _mapper.Map<Doctor>(doctorDto);
-        //    //newDoctor.CreatorId = loggedInUser.Id;
-        //    //newDoctor.ModifierId = loggedInUser.Id;
-        //    newDoctor.Created = DateTime.Now;
-        //    newDoctor.Modified = DateTime.Now;
-            
-        //    await _unitOfWork.Doctors.AddAsync(newDoctor);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    result.Content = doctorDto;
-
-        //    return CreatedAtRoute("Doctor", new { newDoctor.Id}, result);
-        //}
-
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
@@ -75,12 +42,12 @@ namespace Clinic.Api.Controllers.V1
             return Ok(pagedResult);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetDoctor(string id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetDoctor(Guid id)
         {
             var result = new Result<DoctorProfileDto>();
 
-            var doctor = await _unitOfWork.Doctors.FindAsync(d => d.Id == new Guid(id) && d.Status == 1);
+            var doctor = await _unitOfWork.Doctors.FindAsync(d => d.Id == id && d.Status == 1);
             if(doctor is null) return BadRequest(result.Error = PopulateError(404,
                                                                ErrorMessages.Generic.ObjectNotFound,
                                                                ErrorMessages.Generic.BadRequest));
@@ -91,12 +58,12 @@ namespace Clinic.Api.Controllers.V1
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             var result = new Result<User>();
 
-            var isDeleted = await _unitOfWork.Doctors.DeleteAsync(new Guid(id));
+            var isDeleted = await _unitOfWork.Doctors.DeleteAsync(id);
             if (!isDeleted) return BadRequest(result.Error = PopulateError(400,
                                                                         ErrorMessages.Generic.SomethingWentWrong,
                                                                         ErrorMessages.Generic.InvalidRequest));

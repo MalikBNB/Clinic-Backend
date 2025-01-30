@@ -40,17 +40,17 @@ namespace Clinic.Api.Controllers.V1.Users
             _tokenValidationParameters = tokenValidationParameters;
         }
 
-        [HttpPost("User/Register")]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequestDto registrationDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new UserRegistrationResponseDto
-                {
-                    Success = false,
-                    Errors = new List<string> { ErrorMessages.Generic.InvalidPayload }
-                });
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(new UserRegistrationResponseDto
+            //    {
+            //        Success = false,
+            //        Errors = new List<string> { ErrorMessages.Generic.InvalidPayload }
+            //    });
+            //}
 
             var userExist = await _userManager.FindByEmailAsync(registrationDto.Email);
             if (userExist is not null)

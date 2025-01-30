@@ -10,6 +10,5 @@ namespace Clinic.DataService.IRepositories
 {
     public interface IPrescriptionRepository : IGenericRepository<Prescription>
     {
-        Task<bool> UpdateAsync(PrescriptionsDto dto);
     }
 }

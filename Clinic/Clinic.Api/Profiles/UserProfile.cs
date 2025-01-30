@@ -2,6 +2,7 @@
 using Clinic.Entities.DbSets;
 using Clinic.Entities.DTOs.Incoming;
 using Clinic.Entities.DTOs.Incoming.Doctors;
+using Clinic.Entities.DTOs.Incoming.Profile;
 using Clinic.Entities.DTOs.Incoming.Users;
 using Clinic.Entities.DTOs.Outgoing;
 
@@ -37,44 +38,41 @@ namespace Clinic.Api.Profiles
 
             #endregion UserDto ==> User
 
+           
             #region User ==> ProfileDto
 
             CreateMap<User, ProfileDto>()
                 .ForMember(
-                    dest => dest.Id,
-                    from => from.MapFrom(dto => $"{dto.Id}")
-                )
-                .ForMember(
                     dest => dest.FirstName,
-                    from => from.MapFrom(dto => $"{dto.FirstName}")
+                    from => from.MapFrom(u => $"{u.FirstName}")
                 )
                 .ForMember(
                     dest => dest.LastName,
-                    from => from.MapFrom(dto => $"{dto.LastName}")
+                    from => from.MapFrom(u => $"{u.LastName}")
                 )
                 .ForMember(
                     dest => dest.Email,
-                    from => from.MapFrom(dto => $"{dto.Email}")
+                    from => from.MapFrom(u => $"{u.Email}")
                 )
                 .ForMember(
                     dest => dest.DateOfBirth,
-                    from => from.MapFrom(dto => Convert.ToDateTime(dto.DateOfBirth))
+                    from => from.MapFrom(u => Convert.ToDateTime(u.DateOfBirth))
                 )
                 .ForMember(
                     dest => dest.Address,
-                    from => from.MapFrom(dto => $"{dto.Address}")
+                    from => from.MapFrom(u => $"{u.Address}")
                 )
                 .ForMember(
                     dest => dest.Gendor,
-                    from => from.MapFrom(dto => $"{dto.Gendor}")
+                    from => from.MapFrom(u => $"{u.Gendor}")
                 )
                 .ForMember(
                     dest => dest.Phone,
-                    from => from.MapFrom(dto => $"{dto.Phone}")
+                    from => from.MapFrom(u => $"{u.Phone}")
                 )
                 .ForMember(
                     dest => dest.Status,
-                    from => from.MapFrom(dto => dto.Status)
+                    from => from.MapFrom(u => u.Status)
                 );
 
             #endregion User ==> ProfileDto

@@ -64,29 +64,6 @@ namespace Clinic.DataService.Repositories
             }
         }
 
-        public async Task<bool> UpdateAsync(Guid id, UpdateProfileDto dto)
-        {
-            try
-            {
-                var userToUpdate = await dbSet.FirstOrDefaultAsync(u => u.Id == id
-                                                                     && u.Status == 1);
-                if (userToUpdate is null) return false;
-
-                userToUpdate.DateOfBirth = dto.DateOfBirth;
-                userToUpdate.Phone = dto.Phone;
-                userToUpdate.Address = dto.Address;
-                userToUpdate.Gendor = dto.Gendor;
-                userToUpdate.Modified = DateTime.Now;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} Method UpdateAsync has generated an error", typeof(UsersRepository));
-                return false;
-            }
-        }
-
         public override async Task<bool> DeleteAsync(Guid id)
         {
             try

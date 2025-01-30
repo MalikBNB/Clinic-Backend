@@ -12,7 +12,7 @@ public class MedicalRecordsResponseDto
     public string VisitDescription { get; set; } = string.Empty;
     public string Diagnosis { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
-    public string AppointmentId { get; set; } = string.Empty;
+    public Guid AppointmentId { get; set; }
     public DateTime AppointmentDate { get; set; }
     public string CreatorId { get; set; } = string.Empty;
     public string ModifierId { get; set; } = string.Empty;

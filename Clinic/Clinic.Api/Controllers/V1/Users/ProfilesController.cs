@@ -27,13 +27,13 @@ namespace Clinic.Api.Controllers.V1.Users
         }
 
 
-        [HttpGet("User/{id}")]
-        public async Task<IActionResult> GetUserProfile(string id)
+        [HttpGet("User/{id:guid}")]
+        public async Task<IActionResult> GetUserProfile(Guid id)
         {
             var result = new Result<ProfileDto>();
 
-            var profile = await _unitOfWork.Users.GetByIdAsync(new Guid(id));
-            if (profile is null) return BadRequest(result.Error = PopulateError(400,
+            var profile = await _unitOfWork.Users.GetByIdAsync(id);
+            if (profile is null) return BadRequest(result.Error = PopulateError(404,
                                                                ErrorMessages.Profile.UserNotFound,
                                                                ErrorMessages.Generic.BadRequest));
 
@@ -43,13 +43,13 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpGet("Doctor/{id}")]
-        public async Task<IActionResult> GetDoctorProfile(string id)
+        [HttpGet("Doctor/{id:guid}")]
+        public async Task<IActionResult> GetDoctorProfile(Guid id)
         {
             var result = new Result<DoctorProfileDto>();
 
-            var doctorProfile = await _unitOfWork.Doctors.GetByIdAsync(new Guid(id));
-            if (doctorProfile is null) return BadRequest(result.Error = PopulateError(400,
+            var doctorProfile = await _unitOfWork.Doctors.GetByIdAsync(id);
+            if (doctorProfile is null) return BadRequest(result.Error = PopulateError(404,
                                                               ErrorMessages.Profile.UserNotFound,
                                                               ErrorMessages.Generic.BadRequest));
 
@@ -59,13 +59,13 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpGet("Patient/{id}")]
-        public async Task<IActionResult> GetPatientProfile(string id)
+        [HttpGet("Patient/{id:guid}")]
+        public async Task<IActionResult> GetPatientProfile(Guid id)
         {
             var result = new Result<ProfileDto>();
 
-            var patientProfile = await _unitOfWork.Patients.GetByIdAsync(new Guid(id));
-            if (patientProfile is null) return BadRequest(result.Error = PopulateError(400,
+            var patientProfile = await _unitOfWork.Patients.GetByIdAsync(id);
+            if (patientProfile is null) return BadRequest(result.Error = PopulateError(404,
                                                                ErrorMessages.Profile.UserNotFound,
                                                                ErrorMessages.Generic.BadRequest));
 
@@ -75,49 +75,34 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpPut("User/{id}")]
-        public async Task<IActionResult> UpdateProfile(string id, [FromBody] UpdateProfileDto profileDto)
+        [HttpPut("User/{id:guid}")]
+        public async Task<IActionResult> UpdateProfile(Guid id, [FromBody] UpdateProfileDto profileDto)
         {
             var result = new Result<UpdateProfileDto>();
 
-            var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
-            if (loggedInUser is null) 
+            if (!ModelState.IsValid)
                 return BadRequest(result.Error = PopulateError(400,
-                                                               ErrorMessages.Profile.UserNotFound,
+                                                               ErrorMessages.Generic.InvalidPayload,
                                                                ErrorMessages.Generic.BadRequest));
 
-            //profileDto.ModifierId = loggedInUser.Id;
-            profileDto.Modified = DateTime.Now;
-
-            var isUpdated = await _unitOfWork.Users.UpdateAsync(new Guid(id), profileDto);
-            if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
-                                                                          ErrorMessages.Generic.SomethingWentWrong,
-                                                                          ErrorMessages.Generic.UnableToProcess));
-            await _unitOfWork.CompleteAsync();
-
-            result.Content = profileDto;
-
-            return Ok(result);
-        }
-
-        [HttpPut("Patient/{id}")]
-        public async Task<IActionResult> UpdatePatientProfile(string id, [FromBody] UpdateProfileDto profileDto)
-        {
-            var result = new Result<UpdateProfileDto>();
-
             //var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
-            //if (loggedInUser is null)
+            //if (loggedInUser is null) 
             //    return BadRequest(result.Error = PopulateError(400,
             //                                                   ErrorMessages.Profile.UserNotFound,
             //                                                   ErrorMessages.Generic.BadRequest));
 
-            //profileDto.ModifierId = loggedInUser.Id;
-            profileDto.Modified = DateTime.Now;
+            var user = await _unitOfWork.Users.FindAsync(a => a.Id == id);
+            if (user is null)
+                return BadRequest(result.Error = PopulateError(404,
+                                                               ErrorMessages.Generic.ObjectNotFound,
+                                                               ErrorMessages.Generic.BadRequest));
 
-            var isUpdated = await _unitOfWork.Patients.UpdateAsync(new Guid(id), profileDto);
-            if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
-                                                                          ErrorMessages.Generic.SomethingWentWrong,
-                                                                          ErrorMessages.Generic.UnableToProcess));
+            user.DateOfBirth = profileDto.DateOfBirth;
+            user.Gendor = profileDto.Gendor;
+            user.Address = profileDto.Address;
+            user.Phone = profileDto.Phone;
+            user.Modified = DateTime.Now;
+
             await _unitOfWork.CompleteAsync();
 
             result.Content = profileDto;
@@ -125,23 +110,58 @@ namespace Clinic.Api.Controllers.V1.Users
             return Ok(result);
         }
 
-        [HttpPut(("Doctor/{id}"))]
-        public async Task<IActionResult> UpdateDoctorProfile(string id, [FromBody] UpdateDoctorProfileDto doctorProfileDto)
+        [HttpPut("Patient/{id:guid}")]
+        public async Task<IActionResult> UpdatePatientProfile(Guid id, [FromBody] UpdateProfileDto profileDto)
+        {
+            var result = new Result<UpdateProfileDto>();
+
+            if (!ModelState.IsValid)
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.InvalidPayload,
+                                                               ErrorMessages.Generic.BadRequest));
+
+            var patient = await _unitOfWork.Patients.FindAsync(a => a.Id == id);
+            if (patient is null)
+                return BadRequest(result.Error = PopulateError(404,
+                                                               ErrorMessages.Generic.ObjectNotFound,
+                                                               ErrorMessages.Generic.BadRequest));
+
+            patient.DateOfBirth = profileDto.DateOfBirth;
+            patient.Gendor = profileDto.Gendor;
+            patient.Address = profileDto.Address;
+            patient.Phone = profileDto.Phone;
+            patient.Modified = DateTime.Now;
+
+            await _unitOfWork.CompleteAsync();
+
+            result.Content = profileDto;
+
+            return Ok(result);
+        }
+
+        [HttpPut(("Doctor/{id:guid}"))]
+        public async Task<IActionResult> UpdateDoctorProfile(Guid id, [FromBody] UpdateDoctorProfileDto doctorProfileDto)
         {
             var result = new Result<UpdateDoctorProfileDto>();
 
-            var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
-            if (loggedInUser is null) return BadRequest(result.Error = PopulateError(400,
-                                                                                   ErrorMessages.Profile.UserNotFound,
-                                                                                   ErrorMessages.Generic.BadRequest));
+            if (!ModelState.IsValid)
+                return BadRequest(result.Error = PopulateError(400,
+                                                               ErrorMessages.Generic.InvalidPayload,
+                                                               ErrorMessages.Generic.BadRequest));
 
-            doctorProfileDto.Id = id;
-            doctorProfileDto.Modified = DateTime.Now;
+            var doctor = await _unitOfWork.Doctors.FindAsync(a => a.Id == id);
+            if (doctor is null)
+                return BadRequest(result.Error = PopulateError(404,
+                                                               ErrorMessages.Generic.ObjectNotFound,
+                                                               ErrorMessages.Generic.BadRequest));
 
-            var isUpdated = await _unitOfWork.Doctors.UpdateAsync(doctorProfileDto);
-            if (!isUpdated) return BadRequest(result.Error = PopulateError(500,
-                                                                          ErrorMessages.Generic.SomethingWentWrong,
-                                                                          ErrorMessages.Generic.UnableToProcess));
+            doctor.Specialization = doctorProfileDto.Sepecialization;
+            doctor.DateOfBirth = doctorProfileDto.DateOfBirth;
+            doctor.Gendor = doctorProfileDto.Gendor;
+            doctor.Address = doctorProfileDto.Address;
+            doctor.Phone = doctorProfileDto.Phone;
+            doctor.Modified = DateTime.Now;
+
             await _unitOfWork.CompleteAsync();
 
             result.Content = doctorProfileDto;
